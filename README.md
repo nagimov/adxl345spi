@@ -34,8 +34,11 @@ Exit status:
 
 ## Wiring
 
-![adxl_to_raspberry_pi][adxl_to_raspberry_pi_png]
-(image src: `https://developer.microsoft.com/en-us/windows/iot/samples/spiaccelerometer`)
+Fritzing diagrams for two popular revisions:
+
+![adxl345spi_bb][adxl345spi_bb_png]
+
+![adxl345spi_schem][adxl345spi_schem_png]
 
 ```
 CS  : SPI_CE0_N (pin 24)
@@ -88,4 +91,6 @@ which provides a stable sampling rate and reliable time steps.
 [adxl_manual]: http://www.analog.com/en/products/mems/accelerometers/adxl345.html
 [pigpio_info_C]: http://abyz.co.uk/rpi/pigpio/cif.html
 [pigpio_download]: http://abyz.co.uk/rpi/pigpio/download.html
-[adxl_to_raspberry_pi_png]: adxl_to_raspberry_pi.png
+[adxl345spi_bb_png]: adxl345spi_bb.png
+[adxl345spi_schem_png]: adxl345spi_schem.png
+
