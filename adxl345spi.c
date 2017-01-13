@@ -210,7 +210,7 @@ int main(int argc, char *argv[]) {
 
         printf("Reading %d samples in %.1f seconds with sampling rate %.1f Hz...\n", samples, vTime, vFreq);
         int statusReportedTimes = 0;
-        double tCurrent, tClosest, tError, tLeft;
+        double tCurrent, tClosest, tError, tErrorPrev, tLeft;
         int j, jClosest;
 
         tStart = time_time();
@@ -257,14 +257,19 @@ int main(int argc, char *argv[]) {
             }
             else {
                 tCurrent = (float)i * delay;
-                jClosest = 1;
-                tClosest = rt[jClosest];
                 tError = fabs(tClosest - tCurrent);
-                for (j = 1; j < samplesRead; j++) {        // find the closest values using dumb lookup through array
-                    if (fabs(rt[j] - tCurrent) < tError) { // don't care about performance here
-                        jClosest = j;                      // since all the data is already read by now
-                        tClosest = rt[jClosest];           // and timing is not an issue anymore
+                tErrorPrev = tError;
+                for (j = jClosest; j < samplesRead; j++) {  // lookup starting from previous j value
+                    if (fabs(rt[j] - tCurrent) < tError) {  // in order to save some iterations
+                        jClosest = j;
+                        tClosest = rt[jClosest];
+                        tErrorPrev = tError;
                         tError = fabs(tClosest - tCurrent);
+                    }
+                    else {
+	                    if (tError > tErrorPrev) {  // if the error starts growing
+    	                	break                   // break the loop since the minimal error point passed
+	                    }
                     }
                 }  // when this loop is ended, jClosest and tClosest keep coordinates of the closest (j, t) point
             }
