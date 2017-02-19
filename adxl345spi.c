@@ -268,7 +268,7 @@ int main(int argc, char *argv[]) {
                     }
                     else {
 	                    if (tError > tErrorPrev) {  // if the error starts growing
-    	                	break                   // break the loop since the minimal error point passed
+    	                	break;                  // break the loop since the minimal error point passed
 	                    }
                     }
                 }  // when this loop is ended, jClosest and tClosest keep coordinates of the closest (j, t) point
