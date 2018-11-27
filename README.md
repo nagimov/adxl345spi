@@ -42,8 +42,8 @@ Fritzing diagrams for two popular revisions:
 
 ```
 CS  : SPI_CE0_N (pin 24)
-SDO : SPI_MOSI (pin 19)
-SDA : SPI_MISO (pin 21)
+SDO : SPI_MISO (pin 21)
+SDA : SPI_MOSI (pin 19)
 SCL : SPI_CLK (pin 23)
 ```
 
