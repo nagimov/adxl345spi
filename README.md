@@ -59,7 +59,7 @@ This utility is built using `pigpio` library, which provides a `C` interface to 
 In order to compile `adxl345spi.c` file, install `pigpio` library first. The procedure can be shortly described as follows:
 
 ```
-wget abyz.co.uk/rpi/pigpio/pigpio.zip
+wget abyz.me.uk/rpi/pigpio/pigpio.zip
 unzip pigpio.zip
 cd PIGPIO
 make -j4
@@ -89,8 +89,8 @@ which provides a stable sampling rate and reliable time steps.
 
 [adxl345spi_binary]: https://github.com/nagimov/adxl345spi/raw/master/adxl345spi
 [adxl_manual]: http://www.analog.com/en/products/mems/accelerometers/adxl345.html
-[pigpio_info_C]: http://abyz.co.uk/rpi/pigpio/cif.html
-[pigpio_download]: http://abyz.co.uk/rpi/pigpio/download.html
+[pigpio_info_C]: http://abyz.me.uk/rpi/pigpio/cif.html
+[pigpio_download]: http://abyz.me.uk/rpi/pigpio/download.html
 [adxl345spi_bb_png]: adxl345spi_bb.png
 [adxl345spi_schem_png]: adxl345spi_schem.png
 
