@@ -246,9 +246,7 @@ int main(int argc, char *argv[])
           y = (data[4] << 8) | data[3];
           z = (data[6] << 8) | data[5];
           t = getTime();
-          printf("\r[-/-] %llu : x = %.3f, y = %.3f, z = %.3f",
-                 t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
-          fflush(stdout);
+          writer->write(AccelData{i, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor});
         }
         time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
       }
@@ -256,9 +254,6 @@ int main(int argc, char *argv[])
   }
   else
   {
-    FILE *f;
-    f = fopen(cfg.filename, "w");
-
     if (cfg.samplingTime != -1)
     {
       tStart = time_time();
@@ -272,14 +267,7 @@ int main(int argc, char *argv[])
           y = (data[4] << 8) | data[3];
           z = (data[6] << 8) | data[5];
           t = getTime();
-          if (cfg.verbose == 1)
-          {
-            printf("\r[%s] [%i/%i] %llu : x = %.3f, y = %.3f, z = %.3f",
-                   cfg.filename, i + 1, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
-            fflush(stdout);
-          }
-          fprintf(f, "%llu,%.5f,%.5f,%.5f\n", t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
-          fflush(f);
+          writer->write(AccelData{i, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor});
         }
         else
         {
@@ -317,21 +305,14 @@ int main(int argc, char *argv[])
           y = (data[4] << 8) | data[3];
           z = (data[6] << 8) | data[5];
           t = getTime();
-          if (cfg.verbose == 1)
-          {
-            printf("\r[%s] [-/-] %llu : x = %.3f, y = %.3f, z = %.3f",
-                   cfg.filename, t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
-            fflush(stdout);
-          }
-          fprintf(f, "%llu,%.5f,%.5f,%.5f\n", t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
-          fflush(f);
+          writer->write(AccelData{i, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor});
         }
         time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
       }
     }
-    fclose(f);
   }
 
+  delete writer;
   printf("Done\n");
   return 0;
 }

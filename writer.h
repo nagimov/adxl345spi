@@ -17,23 +17,23 @@ class ADXLWriter {
   virtual void write(const AccelData& data) = 0;
 };
 
-class ConsoleADXLWriter
-    :
-        public ADXLWriter {
+class ConsoleADXLWriter : public ADXLWriter {
  public:
   void write(const AccelData& data);
 };
 
-class FileADXLWriter
-    :
-        public ADXLWriter {
+class FileADXLWriter : public ADXLWriter {
  public:
+  FileADXLWriter(const char* filename, int verbose);
+  ~FileADXLWriter();
   void write(const AccelData& data);
+ private:
+  FILE *f;
+  const char* filename;
+  int verbose{};
 };
 
-class RollupFileADXLWriter
-    :
-        public ADXLWriter {
+class RollupFileADXLWriter : public ADXLWriter {
  public:
   void write(const AccelData& data);
 };
