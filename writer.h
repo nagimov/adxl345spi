@@ -20,14 +20,14 @@ class ADXLWriter {
 
 class ConsoleADXLWriter : public ADXLWriter {
  public:
-  void write(const AccelData& data) override;
+  void write(const AccelData& data);
 };
 
 class FileADXLWriter : public ADXLWriter {
  public:
   FileADXLWriter(const char *filename, int verbose);
-  ~FileADXLWriter() override;
-  void write(const AccelData& data) override;
+  ~FileADXLWriter();
+  void write(const AccelData& data);
  private:
   FILE *f;
   const char *filename;
@@ -36,7 +36,7 @@ class FileADXLWriter : public ADXLWriter {
 
 class RollupFileADXLWriter : public ADXLWriter {
  public:
-  void write(const AccelData& data) override;
+  void write(const AccelData& data);
 };
 
 ADXLWriter *createWriter(const params& cfg);
