@@ -24,6 +24,7 @@
 #define COLD_START_DELAY   0.1 // time delay between cold start reads
 
 struct params {
+    int verbose;         // flag enables console output in mode when we write to file
     int save;            // flag specified
     char filename[256];  // specified filename to save data
     double freq;         // sampling rate of data stream, Hz
@@ -33,10 +34,11 @@ struct params {
 };
 
 const struct params defaults = {
+    0,   // silent write to file
     0,   // don't save data to file
     "",
     5,   // 5Hz
-    5,   // TODO: -1 = infinite duration of data stream
+    -1,  // infinite duration of data stream
     -1,  // no rollup by time
     -1   // no rollup by count
 };
@@ -45,19 +47,18 @@ const double scaleFactor = 2 * 16.0 / 8192.0;  // +/- 16g range, 13-bit resoluti
 
 void printUsage() {
     printf("adxl345spi (version %s) \n"
-           "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
-           "\n"
            "Usage: adxl345spi [OPTION]... \n"
            "Read data from ADXL345 accelerometer through SPI interface on Raspberry Pi.\n"
-           "Online help, docs & bug reports: <https://github.com/nagimov/adxl345spi/>\n"
            "\n"
            "Mandatory arguments to long options are mandatory for short options too.\n"
            "  -s, --save FILE     save data to specified FILE (data printed to command-line\n"
            "                      output, if not specified)\n"
            "  -t, --time TIME     set the duration of data stream to TIME seconds\n"
-           "                      (default: %.1f seconds) [integer]\n"
+           "                      (default: infinite) [integer]\n"
            "  -f, --freq FREQ     set the sampling rate of data stream to FREQ samples per\n"
            "                      second, 1 <= FREQ <= %i (default: %.1f Hz) [integer]\n"
+           "  -v, --verbose       enable verbose output when write to file (silent process, \n"
+           "                      if not specified)\n"
            "\n"
            "Data is streamed in comma separated format, e. g.:\n"
            "  time,     x,     y,     z\n"
@@ -70,7 +71,7 @@ void printUsage() {
            "Exit status:\n"
            "  0  if OK\n"
            "  1  if error occurred during data reading or wrong cmdline arguments.\n"
-           "", CODE_VERSION, defaults.samplingTime, MAX_FREQ, defaults.freq);
+           "", CODE_VERSION, MAX_FREQ, defaults.freq);
 }
 
 int handleCommandLineArgs(int argc, char *argv[], struct params *p) {
@@ -106,6 +107,8 @@ int handleCommandLineArgs(int argc, char *argv[], struct params *p) {
                 printUsage();
                 return 1;
             }
+        } else if ((strcmp(argv[i], "-v") == 0) || (strcmp(argv[i], "--verbose") == 0)) {
+            p->verbose = 1;
         } else {
             printUsage();
             return 1;
@@ -181,61 +184,105 @@ int main(int argc, char *argv[]) {
 
     // real reads happen here
     if (cfg.save == 0) {
-        tStart = time_time();
-        for (i = 0; i < samples; i++) {
-            data[0] = DATAX0;
-            bytes = readBytes(h, data, 7);
-            if (bytes == 7) {
-                x = (data[2] << 8) | data[1];
-                y = (data[4] << 8) | data[3];
-                z = (data[6] << 8) | data[5];
-                t = getTime();
-                printf("time = %llu, x = %.3f, y = %.3f, z = %.3f\n",
-                       t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
-            } else {
-                success = 0;
+        if (cfg.samplingTime != -1) {
+            tStart = time_time();
+            for (i = 0; i < samples; i++) {
+                data[0] = DATAX0;
+                bytes = readBytes(h, data, 7);
+                if (bytes == 7) {
+                    x = (data[2] << 8) | data[1];
+                    y = (data[4] << 8) | data[3];
+                    z = (data[6] << 8) | data[5];
+                    t = getTime();
+                    printf("\r[%i/%i] %llu : x = %.3f, y = %.3f, z = %.3f",
+                           i + 1, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
+                    fflush(stdout);
+                } else {
+                    success = 0;
+                }
+                time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
             }
-            time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
-        }
-        gpioTerminate();
-        tDuration = time_time() - tStart;  // need to update current time to give a closer estimate of sampling rate
-        printf("%d samples read in %.2f seconds with sampling rate %.1f Hz\n", samples, tDuration, samples / tDuration);
-        if (success == 0) {
-            printf("Error occurred!");
-            return 1;
+            printf("\n");
+            gpioTerminate();
+            tDuration = time_time() - tStart;  // need to update current time to give a closer estimate of sampling rate
+            printf("%d samples read in %.2f seconds with sampling rate %.1f Hz\n", samples, tDuration, samples / tDuration);
+            if (success == 0) {
+                printf("Error occurred!");
+                return 1;
+            }
+        } else {
+            while(1) {
+                data[0] = DATAX0;
+                bytes = readBytes(h, data, 7);
+                if (bytes == 7) {
+                    x = (data[2] << 8) | data[1];
+                    y = (data[4] << 8) | data[3];
+                    z = (data[6] << 8) | data[5];
+                    t = getTime();
+                    printf("\r[-/-] %llu : x = %.3f, y = %.3f, z = %.3f",
+                           t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
+                    fflush(stdout);
+                }
+                time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
+            }
         }
     } else {
         FILE *f;
         f = fopen(cfg.filename, "w");
 
-        tStart = time_time();
-        for (i = 0; i < samples; i++) {
-            data[0] = DATAX0;
-            bytes = readBytes(h, data, 7);
-            if (bytes == 7) {
-                x = (data[2] << 8) | data[1];
-                y = (data[4] << 8) | data[3];
-                z = (data[6] << 8) | data[5];
-                t = getTime();
-                printf("\r[%s] [%i/%i] %llu : x = %.3f, y = %.3f, z = %.3f",
-                       cfg.filename, i + 1, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
-                fflush(stdout);
-                fprintf(f, "%llu,%.5f,%.5f,%.5f\n", t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
-                fflush(f);
-            } else {
-                success = 0;
+        if (cfg.samplingTime != -1) {
+            tStart = time_time();
+            for (i = 0; i < samples; i++) {
+                data[0] = DATAX0;
+                bytes = readBytes(h, data, 7);
+                if (bytes == 7) {
+                    x = (data[2] << 8) | data[1];
+                    y = (data[4] << 8) | data[3];
+                    z = (data[6] << 8) | data[5];
+                    t = getTime();
+                    if (cfg.verbose == 1) {
+                        printf("\r[%s] [%i/%i] %llu : x = %.3f, y = %.3f, z = %.3f",
+                               cfg.filename, i + 1, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
+                        fflush(stdout);
+                    }
+                    fprintf(f, "%llu,%.5f,%.5f,%.5f\n", t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
+                    fflush(f);
+                } else {
+                    success = 0;
+                }
+                time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
             }
-            time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
-        }
-        printf("\n");
+            if (cfg.verbose == 1) {
+                printf("\n");
+            }
 
-        gpioTerminate();
-        tDuration = time_time() - tStart;  // need to update current time to give a closer estimate of sampling rate
+            gpioTerminate();
+            tDuration = time_time() - tStart;  // need to update current time to give a closer estimate of sampling rate
 
-        printf("%d samples read in %.2f seconds with sampling rate %.1f Hz\n", samples, tDuration, samples / tDuration);
-        if (success == 0) {
-            printf("Error occurred!");
-            return 1;
+            printf("%d samples read in %.2f seconds with sampling rate %.1f Hz\n", samples, tDuration, samples / tDuration);
+            if (success == 0) {
+                printf("Error occurred!");
+                return 1;
+            }
+        } else {
+            while(1) {
+                data[0] = DATAX0;
+                bytes = readBytes(h, data, 7);
+                if (bytes == 7) {
+                    x = (data[2] << 8) | data[1];
+                    y = (data[4] << 8) | data[3];
+                    z = (data[6] << 8) | data[5];
+                    t = getTime();
+                    if (cfg.verbose == 1) {
+                        printf("\r[%s] [-/-] %llu : x = %.3f, y = %.3f, z = %.3f",
+                               cfg.filename, t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
+                        fflush(stdout);
+                    }
+                    fprintf(f, "%llu,%.5f,%.5f,%.5f\n", t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
+                    fflush(f);
+                }
+                time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
+            }
         }
         fclose(f);
     }
