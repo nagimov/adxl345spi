@@ -153,12 +153,12 @@ int main(int argc, char *argv[])
     return status;
   }
 
-  ADXLWriter writer = create_writer(cfg);
+  ADXLWriter *writer = createWriter(cfg);
 
   // reading sensor data
 
   // SPI sensor setup
-  int samples = cfg.freq * cfg.samplingTime;
+  int samples = cfg.samplingTime == -1 ? -1 : cfg.freq * cfg.samplingTime;
   int success = 1;
   int h, bytes;
   char data[7];
@@ -213,9 +213,7 @@ int main(int argc, char *argv[])
           y = (data[4] << 8) | data[3];
           z = (data[6] << 8) | data[5];
           t = getTime();
-          printf("\r[%i/%i] %llu : x = %.3f, y = %.3f, z = %.3f",
-                 i + 1, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor);
-          fflush(stdout);
+          writer->write(AccelData{i, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor});
         }
         else
         {
