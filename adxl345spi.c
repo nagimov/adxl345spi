@@ -5,6 +5,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define CODE_VERSION  "1.0" // TODO: replace codeVersion[3]
+
 #define DATA_FORMAT   0x31  // data format register address
 #define DATA_FORMAT_B 0x0B  // data format bytes: +/- 16g range, 13-bit resolution (p. 26 of ADXL345 datasheet)
 #define READ_BIT      0x80
@@ -13,45 +15,105 @@
 #define POWER_CTL     0x2D
 #define DATAX0        0x32
 
-const char codeVersion[3] = "0.2";  // code version number
-const int timeDefault = 5;  // default duration of data stream, seconds
-const int freqDefault = 5;  // default sampling rate of data stream, Hz
-const int freqMax = 3200;  // maximal allowed cmdline arg sampling rate of data stream, Hz
-const int speedSPI = 2000000;  // SPI communication speed, bps
-const int freqMaxSPI = 100000;  // maximal possible communication sampling rate through SPI, Hz (assumption)
-const int coldStartSamples = 2;  // number of samples to be read before outputting data to console (cold start delays)
-const double coldStartDelay = 0.1;  // time delay between cold start reads
+#define MAX_FREQ      3200     // maximal allowed cmdline arg sampling rate of data stream, Hz
+
+#define SPI_SPEED     2000000  // SPI communication speed, bps
+#define SPI_MAX_FREQ  100000   // maximal possible communication sampling rate through SPI, Hz (assumption)
+
+#define COLD_START_SAMPLES 2   // number of samples to be read before outputting data to console (cold start delays)
+#define COLD_START_DELAY   0.1 // time delay between cold start reads
+
+struct params {
+    int save;            // flag specified
+    char filename[256];  // specified filename to save data
+    double freq;         // sampling rate of data stream, Hz
+    double samplingTime; // duration of data stream, seconds
+    double rollupTime;   // rollup time period, seconds
+    int rollupCount;     // rollup samples count
+};
+
+const struct params defaults = {
+    0,   // don't save data to file
+    "",
+    5,   // 5Hz
+    5,   // TODO: -1 = infinite duration of data stream
+    -1,  // no rollup by time
+    -1   // no rollup by count
+};
+
+const char codeVersion[3] = "0.3";  // code version number
 const double accConversion = 2 * 16.0 / 8192.0;  // +/- 16g range, 13-bit resolution
 const double tStatusReport = 1;  // time period of status report if data read to file, seconds
 
 void printUsage() {
-    printf( "adxl345spi (version %s) \n"
-            "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
-            "\n"
-            "Usage: adxl345spi [OPTION]... \n"
-            "Read data from ADXL345 accelerometer through SPI interface on Raspberry Pi.\n"
-            "Online help, docs & bug reports: <https://github.com/nagimov/adxl345spi/>\n"
-            "\n"
-            "Mandatory arguments to long options are mandatory for short options too.\n"
-            "  -s, --save FILE     save data to specified FILE (data printed to command-line\n"
-            "                      output, if not specified)\n"
-            "  -t, --time TIME     set the duration of data stream to TIME seconds\n"
-            "                      (default: %i seconds) [integer]\n"
-            "  -f, --freq FREQ     set the sampling rate of data stream to FREQ samples per\n"
-            "                      second, 1 <= FREQ <= %i (default: %i Hz) [integer]\n"
-            "\n"
-            "Data is streamed in comma separated format, e. g.:\n"
-            "  time,     x,     y,     z\n"
-            "   0.0,  10.0,   0.0, -10.0\n"
-            "   1.0,   5.0,  -5.0,  10.0\n"
-            "   ...,   ...,   ...,   ...\n"
-            "  time shows seconds elapsed since the first reading;\n"
-            "  x, y and z show acceleration along x, y and z axis in fractions of <g>.\n"
-            "\n"
-            "Exit status:\n"
-            "  0  if OK\n"
-            "  1  if error occurred during data reading or wrong cmdline arguments.\n"
-            "", codeVersion, timeDefault, freqMax, freqDefault);
+    printf("adxl345spi (version %s) \n"
+           "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
+           "\n"
+           "Usage: adxl345spi [OPTION]... \n"
+           "Read data from ADXL345 accelerometer through SPI interface on Raspberry Pi.\n"
+           "Online help, docs & bug reports: <https://github.com/nagimov/adxl345spi/>\n"
+           "\n"
+           "Mandatory arguments to long options are mandatory for short options too.\n"
+           "  -s, --save FILE     save data to specified FILE (data printed to command-line\n"
+           "                      output, if not specified)\n"
+           "  -t, --time TIME     set the duration of data stream to TIME seconds\n"
+           "                      (default: %.1f seconds) [integer]\n"
+           "  -f, --freq FREQ     set the sampling rate of data stream to FREQ samples per\n"
+           "                      second, 1 <= FREQ <= %i (default: %.1f Hz) [integer]\n"
+           "\n"
+           "Data is streamed in comma separated format, e. g.:\n"
+           "  time,     x,     y,     z\n"
+           "   0.0,  10.0,   0.0, -10.0\n"
+           "   1.0,   5.0,  -5.0,  10.0\n"
+           "   ...,   ...,   ...,   ...\n"
+           "  time shows seconds elapsed since the first reading;\n"
+           "  x, y and z show acceleration along x, y and z axis in fractions of <g>.\n"
+           "\n"
+           "Exit status:\n"
+           "  0  if OK\n"
+           "  1  if error occurred during data reading or wrong cmdline arguments.\n"
+           "", codeVersion, defaults.samplingTime, MAX_FREQ, defaults.freq);
+}
+
+int handleCommandLineArgs(int argc, char *argv[], struct params* p) {
+    *p = defaults;
+    for (int i = 1; i < argc; i++) {  // skip argv[0] (program name)
+        if ((strcmp(argv[i], "-s") == 0) || (strcmp(argv[i], "--save") == 0)) {
+            p->save = 1;
+            if (i + 1 <= argc - 1) {  // make sure there are enough arguments in argv
+                i++;
+                strcpy(p->filename, argv[i]);
+            } else {
+                printUsage();
+                return 1;
+            }
+        } else if ((strcmp(argv[i], "-t") == 0) || (strcmp(argv[i], "--time") == 0)) {
+            if (i + 1 <= argc - 1) {
+                i++;
+                p->samplingTime = atoi(argv[i]);
+            } else {
+                printUsage();
+                return 1;
+            }
+        } else if ((strcmp(argv[i], "-f") == 0) || (strcmp(argv[i], "--freq") == 0)) {
+            if (i + 1 <= argc - 1) {
+                i++;
+                p->freq = atoi(argv[i]);
+                if ((p->freq < 1) || (p->freq > MAX_FREQ)) {
+                    printf("Wrong sampling rate specified!\n\n");
+                    printUsage();
+                    return 1;
+                }
+            } else {
+                printUsage();
+                return 1;
+            }
+        } else {
+            printUsage();
+            return 1;
+        }
+    }
+    return 0;
 }
 
 int readBytes(int handle, char *data, int count) {
@@ -68,60 +130,17 @@ int writeBytes(int handle, char *data, int count) {
 int main(int argc, char *argv[]) {
     int i;
 
-    // handling command-line arguments
-
-    int bSave = 0;
-    char vSave[256] = "";
-    double vTime = timeDefault;
-    double vFreq = freqDefault;
-    for (i = 1; i < argc; i++) {  // skip argv[0] (program name)
-        if ((strcmp(argv[i], "-s") == 0) || (strcmp(argv[i], "--save") == 0)) {
-            bSave = 1;
-            if (i + 1 <= argc - 1) {  // make sure there are enough arguments in argv
-                i++;
-                strcpy(vSave, argv[i]);
-            }
-            else {
-                printUsage();
-                return 1;
-            }
-        }
-        else if ((strcmp(argv[i], "-t") == 0) || (strcmp(argv[i], "--time") == 0)) {
-            if (i + 1 <= argc - 1) {
-                i++;
-                vTime = atoi(argv[i]);
-            }
-            else {
-                printUsage();
-                return 1;
-            }
-        }
-        else if ((strcmp(argv[i], "-f") == 0) || (strcmp(argv[i], "--freq") == 0)) {
-            if (i + 1 <= argc - 1) {
-                i++;
-                vFreq = atoi(argv[i]);
-                if ((vFreq < 1) || (vFreq > 3200)) {
-                    printf("Wrong sampling rate specified!\n\n");
-                    printUsage();
-                    return 1;
-                }
-            }
-            else {
-                printUsage();
-                return 1;
-            }
-        }
-        else {
-            printUsage();
-            return 1;
-        }
+    struct params cfg;
+    int status = handleCommandLineArgs(argc, argv, &cfg);
+    if (status != 0) {
+        return status;
     }
 
     // reading sensor data
 
     // SPI sensor setup
-    int samples = vFreq * vTime;
-    int samplesMaxSPI = freqMaxSPI * vTime;
+    int samples = cfg.freq * cfg.samplingTime;
+    int samplesMaxSPI = SPI_MAX_FREQ * cfg.samplingTime;
     int success = 1;
     int h, bytes;
     char data[7];
@@ -131,7 +150,7 @@ int main(int argc, char *argv[]) {
         printf("Failed to initialize GPIO!");
         return 1;
     }
-    h = spiOpen(0, speedSPI, 3);
+    h = spiOpen(0, SPI_SPEED, 3);
     data[0] = BW_RATE;
     data[1] = 0x0F;
     writeBytes(h, data, 2);
@@ -142,22 +161,22 @@ int main(int argc, char *argv[]) {
     data[1] = 0x08;
     writeBytes(h, data, 2);
 
-    double delay = 1.0 / vFreq;  // delay between reads in seconds
+    double delay = 1.0 / cfg.freq;  // delay between reads in seconds
 
     // depending from the output mode (print to cmdline / save to file) data is read in different ways
 
     // for cmdline output, data is read directly to the screen with a sampling rate which is *approximately* equal...
     // but always less than the specified value, since reading takes some time
 
-    if (bSave == 0) {
+    if (cfg.save == 0) {
         // fake reads to eliminate cold start timing issues (~0.01 s shift of sampling time after the first reading)
-        for (i = 0; i < coldStartSamples; i++) {
+        for (i = 0; i < COLD_START_SAMPLES; i++) {
             data[0] = DATAX0;
             bytes = readBytes(h, data, 7);
             if (bytes != 7) {
                 success = 0;
             }
-            time_sleep(coldStartDelay);
+            time_sleep(COLD_START_DELAY);
         }
         // real reads happen here
         tStart = time_time();
@@ -165,30 +184,29 @@ int main(int argc, char *argv[]) {
             data[0] = DATAX0;
             bytes = readBytes(h, data, 7);
             if (bytes == 7) {
-                x = (data[2]<<8)|data[1];
-                y = (data[4]<<8)|data[3];
-                z = (data[6]<<8)|data[5];
+                x = (data[2] << 8) | data[1];
+                y = (data[4] << 8) | data[3];
+                z = (data[6] << 8) | data[5];
                 t = time_time() - tStart;
                 printf("time = %.3f, x = %.3f, y = %.3f, z = %.3f\n",
                        t, x * accConversion, y * accConversion, z * accConversion);
-                }
-            else {
+            } else {
                 success = 0;
             }
             time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
         }
         gpioTerminate();
         tDuration = time_time() - tStart;  // need to update current time to give a closer estimate of sampling rate
-        printf("%d samples read in %.2f seconds with sampling rate %.1f Hz\n", samples, tDuration, samples/tDuration);
+        printf("%d samples read in %.2f seconds with sampling rate %.1f Hz\n", samples, tDuration, samples / tDuration);
         if (success == 0) {
             printf("Error occurred!");
             return 1;
         }
     }
 
-    // for the file output, data is read with a maximal possible sampling rate (around 30,000 Hz)...
-    // and then accurately rescaled to *exactly* match the specified sampling rate...
-    // therefore, saved data can be easily analyzed (e. g. with fft)
+        // for the file output, data is read with a maximal possible sampling rate (around 30,000 Hz)...
+        // and then accurately rescaled to *exactly* match the specified sampling rate...
+        // therefore, saved data can be easily analyzed (e. g. with fft)
     else {
         // reserve vectors for file-output arrays: time, x, y, z
         // arrays will not change their lengths, so separate track of the size is not needed
@@ -208,7 +226,10 @@ int main(int argc, char *argv[]) {
         ry = malloc(samplesMaxSPI * sizeof(double));
         rz = malloc(samplesMaxSPI * sizeof(double));
 
-        printf("Reading %d samples in %.1f seconds with sampling rate %.1f Hz...\n", samples, vTime, vFreq);
+        printf("Reading %d samples in %.1f seconds with sampling rate %.1f Hz...\n",
+               samples,
+               cfg.samplingTime,
+               cfg.freq);
         int statusReportedTimes = 0;
         double tCurrent, tClosest, tError, tErrorPrev, tLeft;
         int j, jClosest;
@@ -219,30 +240,29 @@ int main(int argc, char *argv[]) {
             data[0] = DATAX0;
             bytes = readBytes(h, data, 7);
             if (bytes == 7) {
-                x = (data[2]<<8)|data[1];
-                y = (data[4]<<8)|data[3];
-                z = (data[6]<<8)|data[5];
+                x = (data[2] << 8) | data[1];
+                y = (data[4] << 8) | data[3];
+                z = (data[6] << 8) | data[5];
                 t = time_time();
                 rx[i] = x * accConversion;
                 ry[i] = y * accConversion;
                 rz[i] = z * accConversion;
                 rt[i] = t - tStart;
-            }
-            else {
+            } else {
                 gpioTerminate();
                 printf("Error occurred!");
                 return 1;
             }
             tDuration = t - tStart;
-            if (tDuration > tStatusReport * ((float)statusReportedTimes + 1.0)) {
+            if (tDuration > tStatusReport * ((float) statusReportedTimes + 1.0)) {
                 statusReportedTimes++;
-                tLeft = vTime - tDuration;
+                tLeft = cfg.samplingTime - tDuration;
                 if (tLeft < 0) {
                     tLeft = 0.0;
                 }
                 printf("%.2f seconds left...\n", tLeft);
             }
-            if (tDuration > vTime) {  // enough data read
+            if (tDuration > cfg.samplingTime) {  // enough data read
                 samplesRead = i;
                 break;
             }
@@ -254,9 +274,8 @@ int main(int argc, char *argv[]) {
                 tCurrent = 0.0;
                 jClosest = 0;
                 tClosest = rt[jClosest];
-            }
-            else {
-                tCurrent = (float)i * delay;
+            } else {
+                tCurrent = (float) i * delay;
                 tError = fabs(tClosest - tCurrent);
                 tErrorPrev = tError;
                 for (j = jClosest; j < samplesRead; j++) {  // lookup starting from previous j value
@@ -265,11 +284,10 @@ int main(int argc, char *argv[]) {
                         tClosest = rt[jClosest];
                         tErrorPrev = tError;
                         tError = fabs(tClosest - tCurrent);
-                    }
-                    else {
-	                    if (tError > tErrorPrev) {  // if the error starts growing
-    	                	break;                  // break the loop since the minimal error point passed
-	                    }
+                    } else {
+                        if (tError > tErrorPrev) {  // if the error starts growing
+                            break;                  // break the loop since the minimal error point passed
+                        }
                     }
                 }  // when this loop is ended, jClosest and tClosest keep coordinates of the closest (j, t) point
             }
@@ -279,7 +297,7 @@ int main(int argc, char *argv[]) {
             at[i] = tCurrent;
         }
         FILE *f;
-        f = fopen(vSave, "w");
+        f = fopen(cfg.filename, "w");
         fprintf(f, "time, x, y, z\n");
         for (i = 0; i < samples; i++) {
             fprintf(f, "%.5f, %.5f, %.5f, %.5f \n", at[i], ax[i], ay[i], az[i]);
