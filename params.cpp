@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 #include "params.h"
 
 #define CODE_VERSION  "1.0"
