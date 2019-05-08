@@ -131,6 +131,10 @@ void TimeRollupFileADXLWriter::resetRollup()
 {
   this->checkpoint = getTime();
 }
+void TimeRollupFileADXLWriter::write(const AccelData& data)
+{
+  RollupFileADXLWriter::write(data);
+}
 
 CountRollupFileADXLWriter::CountRollupFileADXLWriter(const char *filename, bool verbose, int rollupCount)
     : RollupFileADXLWriter(filename, verbose)
@@ -152,4 +156,8 @@ void CountRollupFileADXLWriter::resetRollup()
 void CountRollupFileADXLWriter::update()
 {
   this->checkpoint++;
+}
+void CountRollupFileADXLWriter::write(const AccelData& data)
+{
+  RollupFileADXLWriter::write(data);
 }
