@@ -45,6 +45,7 @@ class RollupFileADXLWriter : public FileADXLWriter {
     void rollup();
     virtual bool timeToRollup() = 0;
     virtual void resetRollup() = 0;
+    virtual void update() = 0;
   private:
     std::string basename;
     void updateFilename();
@@ -56,6 +57,8 @@ class TimeRollupFileADXLWriter : public RollupFileADXLWriter {
   protected:
     bool timeToRollup() override;
     void resetRollup() override;
+    void update() override
+    { };
   private:
     double rollupPeriod;
     unsigned long long checkpoint;
@@ -67,6 +70,7 @@ class CountRollupFileADXLWriter : public RollupFileADXLWriter {
   protected:
     bool timeToRollup() override;
     void resetRollup() override;
+    void update() override;
   private:
     int rollupCount;
     int checkpoint;

@@ -12,6 +12,10 @@ ADXLWriter *createWriter(const params& cfg)
   {
     return new TimeRollupFileADXLWriter(cfg.filename, cfg.verbose, cfg.rollupPeriod);
   }
+  else if (cfg.rollupCount != -1)
+  {
+    return new CountRollupFileADXLWriter(cfg.filename, cfg.verbose, cfg.rollupCount);
+  }
   else
   {
     return new FileADXLWriter(cfg.filename, cfg.verbose);
@@ -85,6 +89,7 @@ void RollupFileADXLWriter::write(const AccelData& data)
     rollup();
   }
   writeToFile(data);
+  update();
 }
 
 void RollupFileADXLWriter::rollup()
@@ -128,5 +133,10 @@ CountRollupFileADXLWriter::CountRollupFileADXLWriter(const char *filename, bool 
 
 bool CountRollupFileADXLWriter::timeToRollup()
 {
-  return this->checkpoint
+  return this->checkpoint >= this->rollupCount;
+}
+
+void CountRollupFileADXLWriter::update()
+{
+  this->checkpoint++;
 }
