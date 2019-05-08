@@ -44,7 +44,7 @@ void ConsoleADXLWriter::write(const AccelData& data)
 
 FileADXLWriter::FileADXLWriter(const char *filename, bool verbose)
 {
-  this->f = fopen(filename, "w");
+  this->f = fopen(filename, "a");
   this->filename = const_cast<char *>(filename);
   this->verbose = verbose;
 }
