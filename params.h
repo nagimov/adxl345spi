@@ -21,4 +21,6 @@ const struct params defaults = {
     -1       // no rollup by count
 };
 
+int handleCommandLineArgs(int argc, char *argv[], struct params *p);
+
 #endif //ADXL345SPI__PARAMS_H_

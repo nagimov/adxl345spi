@@ -70,7 +70,7 @@ More information can be found on the [download page][pigpio_download].
 
 ### Compilation
 
-`gcc -Wall -pthread -o adxl345spi adxl345spi.c -lpigpio -lrt`
+`g++ -Wall -pthread -o adxl345spi *.cpp -lpigpio -lrt`
 
 **Build is only tested on Raspbian OS.**
 
@@ -91,6 +91,6 @@ which provides a stable sampling rate and reliable time steps.
 [adxl_manual]: http://www.analog.com/en/products/mems/accelerometers/adxl345.html
 [pigpio_info_C]: http://abyz.me.uk/rpi/pigpio/cif.html
 [pigpio_download]: http://abyz.me.uk/rpi/pigpio/download.html
-[adxl345spi_bb_png]: adxl345spi_bb.png
-[adxl345spi_schem_png]: adxl345spi_schem.png
+[adxl345spi_bb_png]: assets/adxl345spi_bb.png
+[adxl345spi_schem_png]: assets/adxl345spi_schem.png
 

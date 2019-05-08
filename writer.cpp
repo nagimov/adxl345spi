@@ -18,6 +18,7 @@ ADXLWriter *createWriter(const params& cfg)
   }
   else
   {
+    assert(strlen(cfg.filename) == 0 && "filename not initialized");
     return new FileADXLWriter(cfg.filename, cfg.verbose);
   }
 }
