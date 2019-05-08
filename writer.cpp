@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string>
 
 #include "writer.h"
 #include "utils.h"
