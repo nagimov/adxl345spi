@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <assert.h>
 
 #include "writer.h"
 #include "utils.h"
@@ -20,7 +19,7 @@ ADXLWriter *createWriter(const params& cfg)
   }
   else
   {
-    assert(std::strlen(cfg.filename) == 0 && "filename not initialized");
+    assert(strlen(cfg.filename) == 0 && "filename not initialized");
     return new FileADXLWriter(cfg.filename, cfg.verbose);
   }
 }
