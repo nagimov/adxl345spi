@@ -4,7 +4,7 @@
 
 ADXLWriter *createWriter(const params& cfg)
 {
-  if (cfg.save)
+  if (!cfg.save)
   {
     return new ConsoleADXLWriter();
   }

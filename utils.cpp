@@ -1,3 +1,5 @@
+#include <sys/time.h>
+
 #include "utils.h"
 
 unsigned long long getTime()
