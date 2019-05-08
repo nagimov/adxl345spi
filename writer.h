@@ -29,7 +29,7 @@ class FileADXLWriter : public ADXLWriter {
   public:
     FileADXLWriter(const char *filename, bool verbose);
     ~FileADXLWriter();
-    void write(const AccelData& data);
+    void write(const AccelData& data) override;
   protected:
     FILE *f;
     char *filename;
