@@ -22,14 +22,14 @@ class ADXLWriter {
 
 class ConsoleADXLWriter : public ADXLWriter {
   public:
-    void write(const AccelData& data) override;
+    void write(const AccelData& data);
 };
 
 class FileADXLWriter : public ADXLWriter {
   public:
     FileADXLWriter(const char *filename, bool verbose);
     ~FileADXLWriter() override;
-    void write(const AccelData& data) override;
+    void write(const AccelData& data);
   protected:
     FILE *f;
     char *filename;
@@ -44,14 +44,9 @@ class RollupFileADXLWriter : public FileADXLWriter {
     void write(const AccelData& data) override;
   protected:
     void rollup();
-    virtual bool timeToRollup()
-    {
-      return false;
-    };
-    virtual void resetRollup()
-    { };
-    void update()
-    { };
+    virtual bool timeToRollup() = 0;
+    virtual void resetRollup() = 0;
+    virtual void update() = 0;
   private:
     const char *basename;
     void updateFilename();
