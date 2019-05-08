@@ -1,7 +1,7 @@
 #ifndef ADXL345SPI__WRITER_H_
 #define ADXL345SPI__WRITER_H_
 
-#include <string>
+#include <string.h>
 
 #include "params.h"
 
