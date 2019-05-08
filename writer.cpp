@@ -91,12 +91,17 @@ RollupFileADXLWriter::~RollupFileADXLWriter()
 
 void RollupFileADXLWriter::write(const AccelData& data)
 {
+  printf("ping");
   if (timeToRollup())
   {
+    printf("ping2");
     rollup();
   }
+  printf("ping3");
   writeToFile(data);
+  printf("ping4");
   update();
+  printf("ping5");
 }
 
 void RollupFileADXLWriter::rollup()

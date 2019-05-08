@@ -42,7 +42,7 @@ class RollupFileADXLWriter : public FileADXLWriter {
   public:
     RollupFileADXLWriter(const char *filename, bool verbose);
     ~RollupFileADXLWriter();
-    void write(const AccelData& data);
+    void write(const AccelData& data) override;
   protected:
     void rollup();
     virtual bool timeToRollup() = 0;
