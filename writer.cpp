@@ -44,7 +44,7 @@ void ConsoleADXLWriter::write(const AccelData& data)
 FileADXLWriter::FileADXLWriter(const char *filename, bool verbose)
 {
   this->f = fopen(filename, "w");
-  this->filename = filename;
+  this->filename = const_cast<char *>(filename);
   this->verbose = verbose;
 }
 
@@ -60,12 +60,12 @@ void FileADXLWriter::writeToFile(const AccelData& data)
   {
     if (data.samples == -1)
     {
-      printf("\r[%s] [-/-] %llu : x = %.3f, y = %.3f, z = %.3f", this->filename.c_str(), data.time, data.x, data.y, data.z);
+      printf("\r[%s] [-/-] %llu : x = %.3f, y = %.3f, z = %.3f", this->filename, data.time, data.x, data.y, data.z);
     }
     else
     {
       printf("\r[%s] [%i/%i] %llu : x = %.3f, y = %.3f, z = %.3f",
-             this->filename.c_str(), data.i + 1, data.samples, data.time, data.x, data.y, data.z);
+             this->filename, data.i + 1, data.samples, data.time, data.x, data.y, data.z);
     }
     fflush(stdout);
   }
@@ -99,15 +99,13 @@ void RollupFileADXLWriter::rollup()
 {
   fclose(this->f);
   updateFilename();
-  this->f = fopen(this->filename.c_str(), "w");
+  this->f = fopen(this->filename, "w");
   resetRollup();
 }
 
 void RollupFileADXLWriter::updateFilename()
 {
-  char newName[256];
-  sprintf(newName, "%s_%llu", this->basename.c_str(), getTime());
-  this->filename = std::string(newName);
+  sprintf(this->filename, "%s_%llu", this->basename, getTime());
 }
 
 TimeRollupFileADXLWriter::TimeRollupFileADXLWriter(const char *filename, bool verbose, double rollupPeriod)

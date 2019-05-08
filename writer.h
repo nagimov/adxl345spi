@@ -32,7 +32,7 @@ class FileADXLWriter : public ADXLWriter {
     void write(const AccelData& data);
   protected:
     FILE *f;
-    std::string filename;
+    char *filename;
     bool verbose;
 
     void writeToFile(const AccelData& data);
@@ -48,7 +48,7 @@ class RollupFileADXLWriter : public FileADXLWriter {
     virtual void resetRollup() = 0;
     virtual void update() = 0;
   private:
-    std::string basename;
+    const char *basename;
     void updateFilename();
 };
 
