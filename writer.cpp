@@ -129,11 +129,17 @@ CountRollupFileADXLWriter::CountRollupFileADXLWriter(const char *filename, bool 
     : RollupFileADXLWriter(filename, verbose)
 {
   this->rollupCount = rollupCount;
+  this->checkpoint = 0;
 }
 
 bool CountRollupFileADXLWriter::timeToRollup()
 {
   return this->checkpoint >= this->rollupCount;
+}
+
+void CountRollupFileADXLWriter::resetRollup()
+{
+  this->checkpoint = 0;
 }
 
 void CountRollupFileADXLWriter::update()
