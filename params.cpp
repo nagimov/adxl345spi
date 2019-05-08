@@ -73,7 +73,7 @@ int handleCommandLineArgs(int argc, char *argv[], struct params *p)
       if (i + 1 <= argc - 1)
       {
         i++;
-        p->rollupPeriod = atoi(argv[i]);
+        p->rollupPeriod = atof(argv[i]);
       }
       else
       {
