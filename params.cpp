@@ -55,6 +55,32 @@ int handleCommandLineArgs(int argc, char *argv[], struct params *p)
         return 1;
       }
     }
+    else if ((strcmp(argv[i], "-rc") == 0) || strcmp(argv[i], "--rollup-count") == 0)
+    {
+      if (i + 1 <= argc - 1)
+      {
+        i++;
+        p->rollupCount = atoi(argv[i]);
+      }
+      else
+      {
+        printUsage();
+        return 1;
+      }
+    }
+    else if ((strcmp(argv[i], "-rp") == 0) || strcmp(argv[i], "--rollup-period") == 0)
+    {
+      if (i + 1 <= argc - 1)
+      {
+        i++;
+        p->rollupPeriod = atoi(argv[i]);
+      }
+      else
+      {
+        printUsage();
+        return 1;
+      }
+    }
     else if ((strcmp(argv[i], "-t") == 0) || (strcmp(argv[i], "--time") == 0))
     {
       if (i + 1 <= argc - 1)
