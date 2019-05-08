@@ -105,7 +105,7 @@ void RollupFileADXLWriter::rollup()
 {
   fclose(this->f);
   updateFilename();
-  this->f = fopen(this->filename, "w");
+  this->f = fopen(this->filename, "a");
   resetRollup();
 }
 
