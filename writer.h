@@ -59,6 +59,8 @@ class TimeRollupFileADXLWriter : public RollupFileADXLWriter {
   protected:
     bool timeToRollup();
     void resetRollup();
+    void update()
+    { };
   private:
     double rollupPeriod;
     unsigned long long checkpoint;
