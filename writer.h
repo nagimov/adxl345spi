@@ -2,6 +2,7 @@
 #define ADXL345SPI__WRITER_H_
 
 #include "params.h"
+#include <string>
 
 struct AccelData {
     int i;
@@ -13,30 +14,62 @@ struct AccelData {
 };
 
 class ADXLWriter {
- public:
-  virtual ~ADXLWriter() = 0;
-  virtual void write(const AccelData& data) = 0;
+  public:
+    virtual ~ADXLWriter() = 0;
+    virtual void write(const AccelData& data) = 0;
 };
 
 class ConsoleADXLWriter : public ADXLWriter {
- public:
-  void write(const AccelData& data);
+  public:
+    void write(const AccelData& data);
 };
 
 class FileADXLWriter : public ADXLWriter {
- public:
-  FileADXLWriter(const char *filename, int verbose);
-  ~FileADXLWriter();
-  void write(const AccelData& data);
- private:
-  FILE *f;
-  const char *filename;
-  int verbose{};
+  public:
+    FileADXLWriter(const char *filename, bool verbose);
+    ~FileADXLWriter();
+    void write(const AccelData& data);
+  protected:
+    FILE *f;
+    std::string filename;
+    bool verbose;
+
+    void writeToFile(const AccelData& data);
 };
 
-class RollupFileADXLWriter : public ADXLWriter {
- public:
-  void write(const AccelData& data);
+class RollupFileADXLWriter : public FileADXLWriter {
+  public:
+    RollupFileADXLWriter(const char *filename, bool verbose);
+    void write(const AccelData& data);
+  protected:
+    void rollup();
+    virtual bool timeToRollup() = 0;
+    virtual void resetRollup() = 0;
+  private:
+    std::string basename;
+    void updateFilename();
+};
+
+class TimeRollupFileADXLWriter : public RollupFileADXLWriter {
+  public:
+    TimeRollupFileADXLWriter(const char *filename, bool verbose, double rollupPeriod);
+  protected:
+    bool timeToRollup() override;
+    void resetRollup() override;
+  private:
+    double rollupPeriod;
+    unsigned long long checkpoint;
+};
+
+class CountRollupFileADXLWriter : public RollupFileADXLWriter {
+  public:
+    CountRollupFileADXLWriter(const char *filename, bool verbose, int rollupCount);
+  protected:
+    bool timeToRollup() override;
+    void resetRollup() override;
+  private:
+    int rollupCount;
+    int checkpoint;
 };
 
 ADXLWriter *createWriter(const params& cfg);

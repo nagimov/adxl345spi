@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <pigpio.h>
-#include <sys/time.h>
 #include <time.h>
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
 
+#include "utils.h"
 #include "params.h"
 #include "writer.h"
 
@@ -65,7 +65,7 @@ int handleCommandLineArgs(int argc, char *argv[], struct params *p)
   {  // skip argv[0] (program name)
     if ((strcmp(argv[i], "-s") == 0) || (strcmp(argv[i], "--save") == 0))
     {
-      p->save = 1;
+      p->save = true;
       if (i + 1 <= argc - 1)
       {  // make sure there are enough arguments in argv
         i++;
@@ -111,7 +111,7 @@ int handleCommandLineArgs(int argc, char *argv[], struct params *p)
     }
     else if ((strcmp(argv[i], "-v") == 0) || (strcmp(argv[i], "--verbose") == 0))
     {
-      p->verbose = 1;
+      p->verbose = true;
     }
     else
     {
@@ -120,13 +120,6 @@ int handleCommandLineArgs(int argc, char *argv[], struct params *p)
     }
   }
   return 0;
-}
-
-unsigned long long getTime()
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return (unsigned long long) (tv.tv_sec) * 1000 + (unsigned long long) (tv.tv_usec) / 1000;
 }
 
 int readBytes(int handle, char *data, int count)
@@ -198,117 +191,55 @@ int main(int argc, char *argv[])
   }
 
   // real reads happen here
-  if (cfg.save == 0)
+  if (cfg.samplingTime != -1)
   {
-    if (cfg.samplingTime != -1)
+    tStart = time_time();
+    for (i = 0; i < samples; i++)
     {
-      tStart = time_time();
-      for (i = 0; i < samples; i++)
+      data[0] = DATAX0;
+      bytes = readBytes(h, data, 7);
+      if (bytes == 7)
       {
-        data[0] = DATAX0;
-        bytes = readBytes(h, data, 7);
-        if (bytes == 7)
-        {
-          x = (data[2] << 8) | data[1];
-          y = (data[4] << 8) | data[3];
-          z = (data[6] << 8) | data[5];
-          t = getTime();
-          writer->write(AccelData{i, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor});
-        }
-        else
-        {
-          success = 0;
-        }
-        time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
+        x = (data[2] << 8) | data[1];
+        y = (data[4] << 8) | data[3];
+        z = (data[6] << 8) | data[5];
+        t = getTime();
+        writer->write(AccelData{i, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor});
       }
-      printf("\n");
-      gpioTerminate();
-      tDuration = time_time() - tStart;  // need to update current time to give a closer estimate of sampling rate
-      printf("%d samples read in %.2f seconds with sampling rate %.1f Hz\n",
-             samples,
-             tDuration,
-             samples / tDuration);
-      if (success == 0)
+      else
       {
-        printf("Error occurred!");
-        return 1;
+        success = 0;
       }
+      time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
     }
-    else
+    printf("\n");
+    gpioTerminate();
+    tDuration = time_time() - tStart;  // need to update current time to give a closer estimate of sampling rate
+    printf("%d samples read in %.2f seconds with sampling rate %.1f Hz\n",
+           samples,
+           tDuration,
+           samples / tDuration);
+    if (success == 0)
     {
-      while (1)
-      {
-        data[0] = DATAX0;
-        bytes = readBytes(h, data, 7);
-        if (bytes == 7)
-        {
-          x = (data[2] << 8) | data[1];
-          y = (data[4] << 8) | data[3];
-          z = (data[6] << 8) | data[5];
-          t = getTime();
-          writer->write(AccelData{i, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor});
-        }
-        time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
-      }
+      printf("Error occurred!");
+      return 1;
     }
   }
   else
   {
-    if (cfg.samplingTime != -1)
+    while (1)
     {
-      tStart = time_time();
-      for (i = 0; i < samples; i++)
+      data[0] = DATAX0;
+      bytes = readBytes(h, data, 7);
+      if (bytes == 7)
       {
-        data[0] = DATAX0;
-        bytes = readBytes(h, data, 7);
-        if (bytes == 7)
-        {
-          x = (data[2] << 8) | data[1];
-          y = (data[4] << 8) | data[3];
-          z = (data[6] << 8) | data[5];
-          t = getTime();
-          writer->write(AccelData{i, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor});
-        }
-        else
-        {
-          success = 0;
-        }
-        time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
+        x = (data[2] << 8) | data[1];
+        y = (data[4] << 8) | data[3];
+        z = (data[6] << 8) | data[5];
+        t = getTime();
+        writer->write(AccelData{i, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor});
       }
-      if (cfg.verbose == 1)
-      {
-        printf("\n");
-      }
-
-      gpioTerminate();
-      tDuration = time_time() - tStart;  // need to update current time to give a closer estimate of sampling rate
-
-      printf("%d samples read in %.2f seconds with sampling rate %.1f Hz\n",
-             samples,
-             tDuration,
-             samples / tDuration);
-      if (success == 0)
-      {
-        printf("Error occurred!");
-        return 1;
-      }
-    }
-    else
-    {
-      while (1)
-      {
-        data[0] = DATAX0;
-        bytes = readBytes(h, data, 7);
-        if (bytes == 7)
-        {
-          x = (data[2] << 8) | data[1];
-          y = (data[4] << 8) | data[3];
-          z = (data[6] << 8) | data[5];
-          t = getTime();
-          writer->write(AccelData{i, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor});
-        }
-        time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
-      }
+      time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
     }
   }
 
