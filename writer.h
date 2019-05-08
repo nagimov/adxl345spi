@@ -22,13 +22,13 @@ class ADXLWriter {
 
 class ConsoleADXLWriter : public ADXLWriter {
   public:
-    void write(const AccelData& data);
+    void write(const AccelData& data) override;
 };
 
 class FileADXLWriter : public ADXLWriter {
   public:
     FileADXLWriter(const char *filename, bool verbose);
-    ~FileADXLWriter();
+    ~FileADXLWriter() override;
     void write(const AccelData& data) override;
   protected:
     FILE *f;
@@ -41,7 +41,7 @@ class FileADXLWriter : public ADXLWriter {
 class RollupFileADXLWriter : public FileADXLWriter {
   public:
     RollupFileADXLWriter(const char *filename, bool verbose);
-    ~RollupFileADXLWriter();
+    ~RollupFileADXLWriter() override;
     void write(const AccelData& data) override;
   protected:
     void rollup();
@@ -56,7 +56,7 @@ class RollupFileADXLWriter : public FileADXLWriter {
 class TimeRollupFileADXLWriter : public RollupFileADXLWriter {
   public:
     TimeRollupFileADXLWriter(const char *filename, bool verbose, double rollupPeriod);
-    ~TimeRollupFileADXLWriter();
+    ~TimeRollupFileADXLWriter() override;
   protected:
     bool timeToRollup() override;
     void resetRollup() override;
@@ -70,7 +70,7 @@ class TimeRollupFileADXLWriter : public RollupFileADXLWriter {
 class CountRollupFileADXLWriter : public RollupFileADXLWriter {
   public:
     CountRollupFileADXLWriter(const char *filename, bool verbose, int rollupCount);
-    ~CountRollupFileADXLWriter();
+    ~CountRollupFileADXLWriter() override;
   protected:
     bool timeToRollup() override;
     void resetRollup() override;
