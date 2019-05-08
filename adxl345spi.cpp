@@ -1,13 +1,13 @@
+#include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <pigpio.h>
 #include <time.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
 
-#include "utils.h"
 #include "params.h"
 #include "writer.h"
+#include "utils.h"
 
 #define DATA_FORMAT   0x31  // data format register address
 #define DATA_FORMAT_B 0x0B  // data format bytes: +/- 16g range, 13-bit resolution (p. 26 of ADXL345 datasheet)

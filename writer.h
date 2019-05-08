@@ -2,7 +2,6 @@
 #define ADXL345SPI__WRITER_H_
 
 #include "params.h"
-#include <string>
 
 struct AccelData {
     int i;
