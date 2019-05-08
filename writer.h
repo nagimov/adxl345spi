@@ -44,9 +44,14 @@ class RollupFileADXLWriter : public FileADXLWriter {
     void write(const AccelData& data) override;
   protected:
     void rollup();
-    virtual bool timeToRollup() = 0;
-    virtual void resetRollup() = 0;
-    virtual void update() = 0;
+    virtual bool timeToRollup()
+    {
+      return false;
+    };
+    virtual void resetRollup()
+    { };
+    void update()
+    { };
   private:
     const char *basename;
     void updateFilename();
@@ -57,10 +62,8 @@ class TimeRollupFileADXLWriter : public RollupFileADXLWriter {
     TimeRollupFileADXLWriter(const char *filename, bool verbose, double rollupPeriod);
     void write(const AccelData& data) override;
   protected:
-    bool timeToRollup() override;
-    void resetRollup() override;
-    void update() override
-    { };
+    bool timeToRollup();
+    void resetRollup();
   private:
     double rollupPeriod;
     unsigned long long checkpoint;
