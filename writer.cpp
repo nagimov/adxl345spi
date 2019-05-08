@@ -86,9 +86,6 @@ RollupFileADXLWriter::RollupFileADXLWriter(const char *filename, bool verbose)
   rollup();
 }
 
-RollupFileADXLWriter::~RollupFileADXLWriter()
-{ }
-
 void RollupFileADXLWriter::write(const AccelData& data)
 {
   printf("ping");
@@ -124,9 +121,6 @@ TimeRollupFileADXLWriter::TimeRollupFileADXLWriter(const char *filename, bool ve
   this->checkpoint = getTime();
 }
 
-TimeRollupFileADXLWriter::~TimeRollupFileADXLWriter()
-{ }
-
 bool TimeRollupFileADXLWriter::timeToRollup()
 {
   unsigned long long ct = getTime();
@@ -144,9 +138,6 @@ CountRollupFileADXLWriter::CountRollupFileADXLWriter(const char *filename, bool 
   this->rollupCount = rollupCount;
   this->checkpoint = 0;
 }
-
-CountRollupFileADXLWriter::~CountRollupFileADXLWriter()
-{ }
 
 bool CountRollupFileADXLWriter::timeToRollup()
 {
