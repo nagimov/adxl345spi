@@ -20,6 +20,16 @@ class ADXLWriter {
     virtual void write(const AccelData& data) = 0;
 };
 
+class CompositeADXLWriter : public ADXLWriter {
+  public:
+    CompositeADXLWriter(ADXLWriter **writers, int size);
+    ~CompositeADXLWriter();
+    void write(const AccelData& data);
+  private:
+    ADXLWriter **writers;
+    int n;
+};
+
 class ConsoleADXLWriter : public ADXLWriter {
   public:
     void write(const AccelData& data);
@@ -29,6 +39,17 @@ class FileADXLWriter : public ADXLWriter {
   public:
     FileADXLWriter(const char *filename, bool verbose);
     ~FileADXLWriter();
+    void write(const AccelData& data);
+  protected:
+    FILE *f;
+    const char *filename;
+    bool verbose;
+};
+
+class BinaryFileADXLWriter : public ADXLWriter {
+  public:
+    BinaryFileADXLWriter(const char *filename, bool verbose);
+    ~BinaryFileADXLWriter();
     void write(const AccelData& data);
   protected:
     FILE *f;
