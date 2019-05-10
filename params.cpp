@@ -59,7 +59,7 @@ int handleCommandLineArgs(int argc, char *argv[], struct Params *p)
     {
       p->save_text = false;
     }
-    else if ((strcmp(argv[i], "-f") == 0) || (strcmp(argv[i], "--fifo") == 0))
+    else if ((strcmp(argv[i], "-ff") == 0) || (strcmp(argv[i], "--fifo") == 0))
     {
       p->write_fifo = true;
       if (i + 1 <= argc - 1)
