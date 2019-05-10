@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <iostream>
 
 #include "writer.h"
 
@@ -160,6 +161,7 @@ FifoFileADXLWriter::FifoFileADXLWriter(const char *filename, bool verbose)
 {
   mkfifo(filename, 0666);
   this->fd = open(filename, O_WRONLY | O_APPEND);
+  std::cout << this->fd << std::endl;
   this->filename = filename;
   this->verbose = verbose;
 }
@@ -167,7 +169,7 @@ FifoFileADXLWriter::FifoFileADXLWriter(const char *filename, bool verbose)
 FifoFileADXLWriter::~FifoFileADXLWriter()
 {
   close(this->fd);
-  this->fd = NULL;
+  this->fd = 0;
 }
 
 void FifoFileADXLWriter::writeData(const AccelData& data)
