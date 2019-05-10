@@ -23,7 +23,6 @@ void printUsage()
          "  -v, --verbose       enable verbose output when write to file (silent process, \n"
          "                      if not specified)\n"
          "\n"
-         "If rollup used filename <name><.ext> will be transformed to <name>_<timestamp><.ext>.\n"
          "Data is streamed in comma separated format (time, x, y, z), e. g.:\n"
          "   0.0,  10.0,   0.0, -10.0\n"
          "   1.0,   5.0,  -5.0,  10.0\n"
@@ -49,32 +48,6 @@ int handleCommandLineArgs(int argc, char *argv[], struct Params *p)
       {  // make sure there are enough arguments in argv
         i++;
         strcpy(p->filename, argv[i]);
-      }
-      else
-      {
-        printUsage();
-        return 1;
-      }
-    }
-    else if ((strcmp(argv[i], "-rc") == 0) || strcmp(argv[i], "--rollup-count") == 0)
-    {
-      if (i + 1 <= argc - 1)
-      {
-        i++;
-        p->rollupCount = atoi(argv[i]);
-      }
-      else
-      {
-        printUsage();
-        return 1;
-      }
-    }
-    else if ((strcmp(argv[i], "-rp") == 0) || strcmp(argv[i], "--rollup-period") == 0)
-    {
-      if (i + 1 <= argc - 1)
-      {
-        i++;
-        p->rollupPeriod = atof(argv[i]);
       }
       else
       {
