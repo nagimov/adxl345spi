@@ -57,25 +57,21 @@ int handleCommandLineArgs(int argc, char *argv[], struct Params *p)
     }
     else if ((strcmp(argv[i], "-sb") == 0) || (strcmp(argv[i], "--save-binary") == 0))
     {
-      p->save_binary = true;
+      p->save_text = false;
     }
-    else if ((strcmp(argv[i], "-b") == 0) || (strcmp(argv[i], "--backup") == 0))
+    else if ((strcmp(argv[i], "-f") == 0) || (strcmp(argv[i], "--fifo") == 0))
     {
-      p->save_backup = true;
+      p->write_fifo = true;
       if (i + 1 <= argc - 1)
       {  // make sure there are enough arguments in argv
         i++;
-        strcpy(p->backup, argv[i]);
+        strcpy(p->fifoname, argv[i]);
       }
       else
       {
         printUsage();
         return 1;
       }
-    }
-    else if ((strcmp(argv[i], "-bt") == 0) || (strcmp(argv[i], "--backup-text") == 0))
-    {
-      p->text_backup = true;
     }
     else if ((strcmp(argv[i], "-t") == 0) || (strcmp(argv[i], "--time") == 0))
     {

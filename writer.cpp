@@ -12,7 +12,7 @@ ADXLWriter *file_writer(const char *filename, bool use_text, bool verbose)
 {
   if (use_text)
   {
-    return new FifoFileADXLWriter(filename, verbose);
+    return new FileADXLWriter(filename, verbose);
   }
   else
   {
@@ -22,24 +22,24 @@ ADXLWriter *file_writer(const char *filename, bool use_text, bool verbose)
 
 ADXLWriter *createWriter(const Params& cfg)
 {
-  if (cfg.save && cfg.save_backup)
+  if (cfg.save && cfg.write_fifo)
   {
+    assert(strlen(cfg.fifoname) != 0 && "backup filename not initialized");
     assert(strlen(cfg.filename) != 0 && "filename not initialized");
-    assert(strlen(cfg.backup) != 0 && "backup filename not initialized");
     ADXLWriter **p = new ADXLWriter *[2];
-    p[0] = file_writer(cfg.filename, !cfg.save_binary, cfg.verbose);
-    p[1] = file_writer(cfg.backup, cfg.text_backup, false);
+    p[1] = new FifoFileADXLWriter(cfg.fifoname, cfg.verbose);
+    p[0] = file_writer(cfg.filename, cfg.save_text, false);
     return new CompositeADXLWriter(p, 2);
   }
   else if (cfg.save)
   {
     assert(strlen(cfg.filename) != 0 && "filename not initialized");
-    return file_writer(cfg.filename, !cfg.save_binary, cfg.verbose);
+    return file_writer(cfg.filename, cfg.save_text, cfg.verbose);
   }
-  else if (cfg.save_backup)
+  else if (cfg.write_fifo)
   {
-    assert(strlen(cfg.backup) != 0 && "backup filename not initialized");
-    return file_writer(cfg.backup, cfg.text_backup, cfg.verbose);
+    assert(strlen(cfg.fifoname) != 0 && "backup filename not initialized");
+    return new FifoFileADXLWriter(cfg.fifoname, cfg.verbose);
   }
   else
   {

@@ -4,11 +4,10 @@
 struct Params {
     bool verbose;        // flag enables console output in mode when we writeData to file
     bool save;           // flag specified that data save on disk
-    bool save_binary;    // flag enables text main file format
+    bool save_text;    // flag enables text main file format
     char filename[256];  // specified filename to save data
-    bool save_backup;    // flag specified that data save to backup file
-    bool text_backup;    // flag enables text backup file format
-    char backup[256];    // specified backup filename to save data
+    bool write_fifo;     // flag specified that data save to fifo file
+    char fifoname[256];  // specified fifo filename
     double freq;         // sampling rate of data stream, Hz
     double samplingTime; // duration of data stream, seconds
 };
@@ -16,10 +15,9 @@ struct Params {
 const struct Params defaults = {
     false,   // silent writeData to file
     false,   // don't save data to file
-    false,   // use text format for main file
+    true,   // use text format for main file
     "",
     false,   // don't save data to backup file
-    false,   // use binary format for backup file
     "",
     5,       // 5Hz
     -1,      // infinite duration of data stream
