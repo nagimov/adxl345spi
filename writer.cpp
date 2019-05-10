@@ -176,6 +176,21 @@ FifoFileADXLWriter::~FifoFileADXLWriter()
 
 void FifoFileADXLWriter::writeData(const AccelData& data)
 {
+  if (this->verbose == 1)
+  {
+    if (data.samples == -1)
+    {
+      printf("\r[%s] [-/-] %llu : x = %.3f, y = %.3f, z = %.3f",
+             fd > 0 ? filename : "-", data.time, data.x, data.y, data.z);
+    }
+    else
+    {
+      printf("\r[%s] [%i/%i] %llu : x = %.3f, y = %.3f, z = %.3f",
+             fd > 0 ? filename : "-", data.i + 1, data.samples, data.time, data.x, data.y, data.z);
+    }
+    fflush(stdout);
+  }
+
   if (fd < 0)
   {
     fd = open(filename, O_WRONLY | O_APPEND | O_NONBLOCK);
@@ -185,19 +200,6 @@ void FifoFileADXLWriter::writeData(const AccelData& data)
     }
   }
 
-  if (this->verbose == 1)
-  {
-    if (data.samples == -1)
-    {
-      printf("\r[%s] [-/-] %llu : x = %.3f, y = %.3f, z = %.3f", this->filename, data.time, data.x, data.y, data.z);
-    }
-    else
-    {
-      printf("\r[%s] [%i/%i] %llu : x = %.3f, y = %.3f, z = %.3f",
-             this->filename, data.i + 1, data.samples, data.time, data.x, data.y, data.z);
-    }
-    fflush(stdout);
-  }
   char a[0];
   int n = sprintf(a, "%llu,%.5f,%.5f,%.5f\n", data.time, data.x, data.y, data.z);
   write(fd, a, n);
