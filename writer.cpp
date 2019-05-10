@@ -191,25 +191,20 @@ void FifoFileADXLWriter::writeData(const AccelData& data)
     fflush(stdout);
   }
 
-  std::cout << std::endl;
-  std::cout << fd << " - ";
   if (fd < 0)
   {
     fd = open(filename, O_WRONLY | O_APPEND | O_NONBLOCK);
-    std::cout << fd;
     if (fd < 0)
     {
       return;
     }
   }
-  std::cout << std::endl;
 
   char a[1024];
   int n = sprintf(a, "%llu,%.5f,%.5f,%.5f\n", data.time, data.x, data.y, data.z);
   ssize_t num = write(fd, a, n * sizeof(char));
-  if (num < 0) {
-    std::cout << std::endl;
-    std::cout << num << std::endl;
+  if (num < 0)
+  {
     close(fd);
     fd = -1;
   }
