@@ -160,7 +160,7 @@ void BinaryFileADXLWriter::writeData(const AccelData& data)
 FifoFileADXLWriter::FifoFileADXLWriter(const char *filename, bool verbose)
 {
   mkfifo(filename, 0666);
-  this->fd = open(filename, O_WRONLY | O_APPEND);
+  this->fd = open(filename, O_WRONLY | O_APPEND | O_NONBLOCK);
   std::cout << this->fd << std::endl;
   this->filename = filename;
   this->verbose = verbose;
