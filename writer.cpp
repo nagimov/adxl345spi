@@ -109,7 +109,7 @@ void CountRollupFileADXLWriter::write(const AccelData& data)
 void CountRollupFileADXLWriter::rollup()
 {
   fclose(this->f);
-  sprintf(this->filename, this->name_template, getTime());
+  sprintf(this->filename, this->name_template, get_time());
   this->f = fopen(this->filename, "w");
   this->count = 0;
 }
@@ -118,7 +118,7 @@ TimeRollupFileADXLWriter::TimeRollupFileADXLWriter(const char *filename, bool ve
     : FileADXLWriter(filename, verbose)
 {
   this->rollupPeriod = rollupPeriod;
-  this->checkpoint = getTime();
+  this->checkpoint = get_time();
   this->name_template = compose_template(filename);
   rollup();
 }
@@ -132,14 +132,14 @@ TimeRollupFileADXLWriter::~TimeRollupFileADXLWriter()
 void TimeRollupFileADXLWriter::rollup()
 {
   fclose(this->f);
-  sprintf(this->filename, this->name_template, getTime());
+  sprintf(this->filename, this->name_template, get_time());
   this->f = fopen(this->filename, "w");
-  this->checkpoint = getTime();
+  this->checkpoint = get_time();
 }
 
 void TimeRollupFileADXLWriter::write(const AccelData& data)
 {
-  if (getTime() - this->checkpoint > this->rollupPeriod)
+  if (get_time() - this->checkpoint > this->rollupPeriod)
   {
     rollup();
   }

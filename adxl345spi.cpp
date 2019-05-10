@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
         x = (data[2] << 8) | data[1];
         y = (data[4] << 8) | data[3];
         z = (data[6] << 8) | data[5];
-        t = getTime();
+        t = get_time();
         writer->write(AccelData{i, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor});
       }
       else
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
         x = (data[2] << 8) | data[1];
         y = (data[4] << 8) | data[3];
         z = (data[6] << 8) | data[5];
-        t = getTime();
+        t = get_time();
         writer->write(AccelData{i, samples, t, x * scaleFactor, y * scaleFactor, z * scaleFactor});
       }
       time_sleep(delay);  // pigpio sleep is accurate enough for console output, not necessary to use nanosleep
