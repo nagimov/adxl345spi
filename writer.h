@@ -32,36 +32,10 @@ class FileADXLWriter : public ADXLWriter {
     void write(const AccelData& data);
   protected:
     FILE *f;
-    char *filename;
+    const char *filename;
     bool verbose;
-
-    void writeToFile(const AccelData& data);
 };
 
-class CountRollupFileADXLWriter : public FileADXLWriter {
-  public:
-    CountRollupFileADXLWriter(const char *filename, bool verbose, int rollupCount);
-    ~CountRollupFileADXLWriter();
-    void write(const AccelData& data);
-  private:
-    void rollup();
-    char *name_template;
-    int rollupCount;
-    int count;
-};
-
-class TimeRollupFileADXLWriter : public FileADXLWriter {
-  public:
-    TimeRollupFileADXLWriter(const char *filename, bool verbose, double rollupPeriod);
-    ~TimeRollupFileADXLWriter();
-    void write(const AccelData& data);
-  private:
-    void rollup();
-    char *name_template;
-    double rollupPeriod;
-    unsigned long long checkpoint;
-};
-
-ADXLWriter *createWriter(const params& cfg);
+ADXLWriter *createWriter(const Params& cfg);
 
 #endif //ADXL345SPI__WRITER_H_

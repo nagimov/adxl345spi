@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 {
   int i;
 
-  struct params cfg;
+  struct Params cfg;
   int status = handleCommandLineArgs(argc, argv, &cfg);
   if (status != 0)
   {

@@ -37,7 +37,7 @@ void printUsage()
          "", CODE_VERSION, MAX_FREQ, defaults.freq);
 }
 
-int handleCommandLineArgs(int argc, char *argv[], struct params *p)
+int handleCommandLineArgs(int argc, char *argv[], struct Params *p)
 {
   *p = defaults;
   for (int i = 1; i < argc; i++)
