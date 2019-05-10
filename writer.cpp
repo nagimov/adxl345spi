@@ -22,7 +22,7 @@ ADXLWriter *createWriter(const Params& cfg)
   {
     assert(strlen(cfg.filename) != 0 && "filename not initialized");
     assert(strlen(cfg.backup) != 0 && "backup filename not initialized");
-    ADXLWriter *p[2];
+    ADXLWriter **p = new ADXLWriter*[2];
     p[0] = file_writer(cfg.filename, !cfg.save_binary, cfg.verbose);
     p[1] = file_writer(cfg.backup, cfg.text_backup, false);
     return new CompositeADXLWriter(p, 2);
