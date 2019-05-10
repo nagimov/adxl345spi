@@ -8,6 +8,12 @@
 
 #include "writer.h"
 
+inline bool exists(const char *name)
+{
+  struct stat buffer;
+  return (stat(name, &buffer) == 0);
+}
+
 ADXLWriter *file_writer(const char *filename, bool use_text, bool verbose)
 {
   if (use_text)
@@ -24,7 +30,7 @@ ADXLWriter *createWriter(const Params& cfg)
 {
   if (cfg.save && cfg.write_fifo)
   {
-    assert(strlen(cfg.fifoname) != 0 && "backup filename not initialized");
+    assert(strlen(cfg.fifoname) != 0 && "fifo filename not initialized");
     assert(strlen(cfg.filename) != 0 && "filename not initialized");
     ADXLWriter **p = new ADXLWriter *[2];
     p[1] = new FifoFileADXLWriter(cfg.fifoname, cfg.verbose);
@@ -38,7 +44,7 @@ ADXLWriter *createWriter(const Params& cfg)
   }
   else if (cfg.write_fifo)
   {
-    assert(strlen(cfg.fifoname) != 0 && "backup filename not initialized");
+    assert(strlen(cfg.fifoname) != 0 && "fifo filename not initialized");
     return new FifoFileADXLWriter(cfg.fifoname, cfg.verbose);
   }
   else
@@ -159,7 +165,10 @@ void BinaryFileADXLWriter::writeData(const AccelData& data)
 
 FifoFileADXLWriter::FifoFileADXLWriter(const char *filename, bool verbose)
 {
-  mkfifo(filename, 0666);
+  if (!exists(filename))
+  {
+    mkfifo(filename, 0666);
+  }
   this->fd = open(filename, O_WRONLY | O_APPEND | O_NONBLOCK);
   this->filename = filename;
   this->verbose = verbose;

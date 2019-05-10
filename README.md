@@ -14,10 +14,15 @@ Usage: adxl345spi [OPTION]...
 Mandatory arguments to long options are mandatory for short options too.
   -s, --save FILE     save data to specified FILE (data printed to command-line
                       output, if not specified)
+  -sb, --save-binary  enable write to file in binary format (used text format,
+                      if not specified)
+  -ff, --fifo FILE    write data to fifo FILE (create new fifo if not exists)
   -t, --time TIME     set the duration of data stream to TIME seconds
                       (default: 5 seconds) [integer]
   -f, --freq FREQ     set the sampling rate of data stream to FREQ count per
                       second, 1 <= FREQ <= 3200 (default: 5 Hz) [integer]
+  -v, --verbose       enable verbose output when writeData to file (silent process,
+                      if not specified)
 
 Data is streamed in comma separated format, e. g.:
   time,     x,     y,     z

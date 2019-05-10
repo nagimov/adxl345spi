@@ -17,7 +17,7 @@ const struct Params defaults = {
     false,   // don't save data to file
     true,   // use text format for main file
     "",
-    false,   // don't save data to backup file
+    false,   // don't write data to fifo
     "",
     5,       // 5Hz
     -1,      // infinite duration of data stream
