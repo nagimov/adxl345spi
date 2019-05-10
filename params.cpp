@@ -20,7 +20,7 @@ void printUsage()
          "                      (default: infinite) [integer]\n"
          "  -f, --freq FREQ     set the sampling rate of data stream to FREQ count per\n"
          "                      second, 1 <= FREQ <= %i (default: %.1f Hz) [integer]\n"
-         "  -v, --verbose       enable verbose output when write to file (silent process, \n"
+         "  -v, --verbose       enable verbose output when writeData to file (silent process, \n"
          "                      if not specified)\n"
          "\n"
          "Data is streamed in comma separated format (time, x, y, z), e. g.:\n"

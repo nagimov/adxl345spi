@@ -2,7 +2,7 @@
 #define ADXL345SPI__PARAMS_H_
 
 struct Params {
-    bool verbose;        // flag enables console output in mode when we write to file
+    bool verbose;        // flag enables console output in mode when we writeData to file
     bool save;           // flag specified that data save on disk
     bool save_binary;    // flag enables text main file format
     char filename[256];  // specified filename to save data
@@ -14,7 +14,7 @@ struct Params {
 };
 
 const struct Params defaults = {
-    false,   // silent write to file
+    false,   // silent writeData to file
     false,   // don't save data to file
     false,   // use text format for main file
     "",

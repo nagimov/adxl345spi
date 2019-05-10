@@ -17,14 +17,14 @@ struct AccelData {
 class ADXLWriter {
   public:
     virtual ~ADXLWriter() = 0;
-    virtual void write(const AccelData& data) = 0;
+    virtual void writeData(const AccelData& data) = 0;
 };
 
 class CompositeADXLWriter : public ADXLWriter {
   public:
     CompositeADXLWriter(ADXLWriter **writers, int size);
     ~CompositeADXLWriter();
-    void write(const AccelData& data);
+    void writeData(const AccelData& data);
   private:
     ADXLWriter **writers;
     int n;
@@ -32,14 +32,14 @@ class CompositeADXLWriter : public ADXLWriter {
 
 class ConsoleADXLWriter : public ADXLWriter {
   public:
-    void write(const AccelData& data);
+    void writeData(const AccelData& data);
 };
 
 class FileADXLWriter : public ADXLWriter {
   public:
     FileADXLWriter(const char *filename, bool verbose);
     ~FileADXLWriter();
-    void write(const AccelData& data);
+    void writeData(const AccelData& data);
   protected:
     FILE *f;
     const char *filename;
@@ -50,7 +50,7 @@ class BinaryFileADXLWriter : public ADXLWriter {
   public:
     BinaryFileADXLWriter(const char *filename, bool verbose);
     ~BinaryFileADXLWriter();
-    void write(const AccelData& data);
+    void writeData(const AccelData& data);
   protected:
     FILE *f;
     const char *filename;
@@ -61,9 +61,9 @@ class FifoFileADXLWriter : public ADXLWriter {
   public:
     FifoFileADXLWriter(const char *filename, bool verbose);
     ~FifoFileADXLWriter();
-    void write(const AccelData& data);
+    void writeData(const AccelData& data);
   protected:
-    FILE *fd;
+    int fd;
     const char *filename;
     bool verbose;
 };

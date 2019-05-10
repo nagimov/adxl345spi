@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "writer.h"
 
@@ -47,7 +48,7 @@ ADXLWriter *createWriter(const Params& cfg)
 
 ADXLWriter::~ADXLWriter() = default;
 
-void ConsoleADXLWriter::write(const AccelData& data)
+void ConsoleADXLWriter::writeData(const AccelData& data)
 {
   if (data.samples == -1)
   {
@@ -75,11 +76,11 @@ CompositeADXLWriter::~CompositeADXLWriter()
   }
 }
 
-void CompositeADXLWriter::write(const AccelData& data)
+void CompositeADXLWriter::writeData(const AccelData& data)
 {
   for (int i = 0; i < this->n; i++)
   {
-    this->writers[i]->write(data);
+    this->writers[i]->writeData(data);
   }
 }
 
@@ -96,7 +97,7 @@ FileADXLWriter::~FileADXLWriter()
   this->f = NULL;
 }
 
-void FileADXLWriter::write(const AccelData& data)
+void FileADXLWriter::writeData(const AccelData& data)
 {
   if (this->verbose == 1)
   {
@@ -135,7 +136,7 @@ struct Record {
     double z;
 };
 
-void BinaryFileADXLWriter::write(const AccelData& data)
+void BinaryFileADXLWriter::writeData(const AccelData& data)
 {
   if (this->verbose == 1)
   {
@@ -158,18 +159,18 @@ void BinaryFileADXLWriter::write(const AccelData& data)
 FifoFileADXLWriter::FifoFileADXLWriter(const char *filename, bool verbose)
 {
   mkfifo(filename, 0666);
-  this->fd = fopen(filename, "a");
+  this->fd = open(filename, O_WRONLY | O_APPEND);
   this->filename = filename;
   this->verbose = verbose;
 }
 
 FifoFileADXLWriter::~FifoFileADXLWriter()
 {
-  fclose(this->fd);
+  close(this->fd);
   this->fd = NULL;
 }
 
-void FifoFileADXLWriter::write(const AccelData& data)
+void FifoFileADXLWriter::writeData(const AccelData& data)
 {
   if (this->verbose == 1)
   {
@@ -184,6 +185,7 @@ void FifoFileADXLWriter::write(const AccelData& data)
     }
     fflush(stdout);
   }
-  fprintf(fd, "%llu,%.5f,%.5f,%.5f\n", data.time, data.x, data.y, data.z);
-  fflush(fd);
+  char a[0];
+  int  n = sprintf(a, "%llu,%.5f,%.5f,%.5f\n", data.time, data.x, data.y, data.z);
+  write(fd, a, n);
 }
