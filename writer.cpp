@@ -160,7 +160,7 @@ void BinaryFileADXLWriter::writeData(const AccelData& data)
 FifoFileADXLWriter::FifoFileADXLWriter(const char *filename, bool verbose)
 {
   mkfifo(filename, 0666);
-  this->fd = open(filename, O_WRONLY | O_NONBLOCK);
+  this->fd = open(filename, O_WRONLY | O_APPEND | O_NONBLOCK);
   this->filename = filename;
   this->verbose = verbose;
 }
@@ -193,7 +193,7 @@ void FifoFileADXLWriter::writeData(const AccelData& data)
 
   if (fd < 0)
   {
-    fd = open(filename, O_WRONLY | O_NONBLOCK);
+    fd = open(filename, O_WRONLY | O_APPEND | O_NONBLOCK);
     if (fd < 0)
     {
       return;
