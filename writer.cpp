@@ -209,7 +209,6 @@ void FifoFileADXLWriter::writeData(const AccelData& data)
   if (num < 0) {
     std::cout << std::endl;
     std::cout << num << std::endl;
-    std::cout << strerror(errno) << std::endl;
     close(fd);
     fd = 0;
   }
