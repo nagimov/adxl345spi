@@ -53,6 +53,7 @@ FileADXLWriter::~FileADXLWriter()
 {
   fclose(this->f);
   this->f = NULL;
+  printf("ping");
   delete this->filename;
   this->filename = NULL;
 }
