@@ -51,13 +51,8 @@ FileADXLWriter::FileADXLWriter(const char *filename, bool verbose)
 
 FileADXLWriter::~FileADXLWriter()
 {
-  printf("ping +\n");
   fclose(this->f);
   this->f = NULL;
-  printf("ping ++\n");
-  delete this->filename;
-  printf("ping +++\n");
-  this->filename = NULL;
 }
 
 void FileADXLWriter::writeToFile(const AccelData& data)
