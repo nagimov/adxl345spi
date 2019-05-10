@@ -193,7 +193,9 @@ void FifoFileADXLWriter::writeData(const AccelData& data)
 
   if (fd < 0)
   {
+    std::cout << fd << " - ";
     fd = open(filename, O_WRONLY | O_APPEND | O_NONBLOCK);
+    std::cout << fd << std::endl;
     if (fd < 0)
     {
       return;
