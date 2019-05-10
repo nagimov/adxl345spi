@@ -180,12 +180,12 @@ void FifoFileADXLWriter::writeData(const AccelData& data)
   {
     if (data.samples == -1)
     {
-      printf("\r[%s] [-/-] %llu : x = %.3f, y = %.3f, z = %.3f \33[2K",
+      printf("\r[%s] [-/-] %llu : x = %.3f, y = %.3f, z = %.3f \33[K",
              (fd > 0) ? filename : "-", data.time, data.x, data.y, data.z);
     }
     else
     {
-      printf("\r[%s] [%i/%i] %llu : x = %.3f, y = %.3f, z = %.3f \33[2K",
+      printf("\r[%s] [%i/%i] %llu : x = %.3f, y = %.3f, z = %.3f \33[K",
              (fd > 0) ? filename : "-", data.i + 1, data.samples, data.time, data.x, data.y, data.z);
     }
     fflush(stdout);
