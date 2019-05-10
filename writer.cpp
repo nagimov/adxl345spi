@@ -202,5 +202,5 @@ void FifoFileADXLWriter::writeData(const AccelData& data)
 
   char a[0];
   int n = sprintf(a, "%llu,%.5f,%.5f,%.5f\n", data.time, data.x, data.y, data.z);
-  write(fd, a, n);
+  write(fd, a, n * sizeof(char));
 }
