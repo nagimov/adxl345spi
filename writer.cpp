@@ -201,13 +201,12 @@ void FifoFileADXLWriter::writeData(const AccelData& data)
   }
 
   char a[1024];
-  std::cout << a << std::endl;
   int n = sprintf(a, "%llu,%.5f,%.5f,%.5f\n", data.time, data.x, data.y, data.z);
-  std::cout << a << std::endl;
-  std::cout << n << std::endl;
   ssize_t num = write(fd, a, n * sizeof(char));
   if (num < 0) {
     std::cout << num << std::endl;
     std::cout << strerror(errno) << std::endl;
+    close(fd);
+    fd = 0;
   }
 }
