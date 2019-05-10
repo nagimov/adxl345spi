@@ -16,7 +16,7 @@ Mandatory arguments to long options are mandatory for short options too.
                       output, if not specified)
   -t, --time TIME     set the duration of data stream to TIME seconds
                       (default: 5 seconds) [integer]
-  -f, --freq FREQ     set the sampling rate of data stream to FREQ samples per
+  -f, --freq FREQ     set the sampling rate of data stream to FREQ count per
                       second, 1 <= FREQ <= 3200 (default: 5 Hz) [integer]
 
 Data is streamed in comma separated format, e. g.:
@@ -77,7 +77,7 @@ More information can be found on the [download page][pigpio_download].
 ## Code features
 
 Due to limitations of I2C bus, it is impossible to obtain a maximal sampling rate through I2C interface. Therefore, SPI
-interface is used to get 3200 samples per second, which is the upper limit of ADXL345 chip itself. SPI bus data transfer
+interface is used to get 3200 count per second, which is the upper limit of ADXL345 chip itself. SPI bus data transfer
 rate is set to 2 Mbps, to ensure no readings are lost during transmission.
 
 For the console output, the downsampling is achieved using `sleep()` calls between transmissions, providing someway

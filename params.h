@@ -8,7 +8,7 @@ struct params {
     double freq;         // sampling rate of data stream, Hz
     double samplingTime; // duration of data stream, seconds
     double rollupPeriod; // rollup time period, seconds
-    int rollupCount;     // rollup samples count
+    int rollupCount;     // rollup count count
 };
 
 const struct params defaults = {

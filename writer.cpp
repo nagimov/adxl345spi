@@ -52,7 +52,9 @@ FileADXLWriter::FileADXLWriter(const char *filename, bool verbose)
 FileADXLWriter::~FileADXLWriter()
 {
   fclose(this->f);
-  this->filename = nullptr;
+  this->f = NULL;
+  delete this->filename;
+  this->filename = NULL;
 }
 
 void FileADXLWriter::writeToFile(const AccelData& data)
@@ -79,85 +81,67 @@ void FileADXLWriter::write(const AccelData& data)
   writeToFile(data);
 }
 
-RollupFileADXLWriter::RollupFileADXLWriter(const char *filename, bool verbose)
+CountRollupFileADXLWriter::CountRollupFileADXLWriter(const char *filename, bool verbose, int rollupCount)
     : FileADXLWriter(filename, verbose)
 {
-  this->basename = filename;
+  this->rollupCount = rollupCount;
+  this->count = 0;
+  this->name_template = compose_template(filename);
   rollup();
 }
 
-void RollupFileADXLWriter::write(const AccelData& data)
+CountRollupFileADXLWriter::~CountRollupFileADXLWriter()
 {
-  printf("ping");
-  if (timeToRollup())
+  delete this->name_template;
+  this->name_template = NULL;
+}
+
+void CountRollupFileADXLWriter::write(const AccelData& data)
+{
+  if (this->count > this->rollupCount)
   {
-    printf("ping2");
     rollup();
   }
-  printf("ping3");
   writeToFile(data);
-  printf("ping4");
-  update();
-  printf("ping5");
+  this->count++;
 }
 
-void RollupFileADXLWriter::rollup()
+void CountRollupFileADXLWriter::rollup()
 {
   fclose(this->f);
-  updateFilename();
-  this->f = fopen(this->filename, "a");
-  resetRollup();
-}
-
-void RollupFileADXLWriter::updateFilename()
-{
-  sprintf(this->filename, "%s_%llu", this->basename, getTime());
+  sprintf(this->filename, this->name_template, getTime());
+  this->f = fopen(this->filename, "w");
+  this->count = 0;
 }
 
 TimeRollupFileADXLWriter::TimeRollupFileADXLWriter(const char *filename, bool verbose, double rollupPeriod)
-    : RollupFileADXLWriter(filename, verbose)
+    : FileADXLWriter(filename, verbose)
 {
   this->rollupPeriod = rollupPeriod;
   this->checkpoint = getTime();
+  this->name_template = compose_template(filename);
+  rollup();
 }
 
-bool TimeRollupFileADXLWriter::timeToRollup()
+TimeRollupFileADXLWriter::~TimeRollupFileADXLWriter()
 {
-  unsigned long long ct = getTime();
-  return ct - this->checkpoint > this->rollupPeriod;
+  delete this->name_template;
+  this->name_template = NULL;
 }
 
-void TimeRollupFileADXLWriter::resetRollup()
+void TimeRollupFileADXLWriter::rollup()
 {
+  fclose(this->f);
+  sprintf(this->filename, this->name_template, getTime());
+  this->f = fopen(this->filename, "w");
   this->checkpoint = getTime();
 }
+
 void TimeRollupFileADXLWriter::write(const AccelData& data)
 {
-  RollupFileADXLWriter::write(data);
-}
-
-CountRollupFileADXLWriter::CountRollupFileADXLWriter(const char *filename, bool verbose, int rollupCount)
-    : RollupFileADXLWriter(filename, verbose)
-{
-  this->rollupCount = rollupCount;
-  this->checkpoint = 0;
-}
-
-bool CountRollupFileADXLWriter::timeToRollup()
-{
-  return this->checkpoint >= this->rollupCount;
-}
-
-void CountRollupFileADXLWriter::resetRollup()
-{
-  this->checkpoint = 0;
-}
-
-void CountRollupFileADXLWriter::update()
-{
-  this->checkpoint++;
-}
-void CountRollupFileADXLWriter::write(const AccelData& data)
-{
-  RollupFileADXLWriter::write(data);
+  if (getTime() - this->checkpoint > this->rollupPeriod)
+  {
+    rollup();
+  }
+  writeToFile(data);
 }

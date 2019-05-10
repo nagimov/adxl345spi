@@ -28,7 +28,7 @@ class ConsoleADXLWriter : public ADXLWriter {
 class FileADXLWriter : public ADXLWriter {
   public:
     FileADXLWriter(const char *filename, bool verbose);
-    ~FileADXLWriter() override;
+    ~FileADXLWriter();
     void write(const AccelData& data);
   protected:
     FILE *f;
@@ -38,45 +38,28 @@ class FileADXLWriter : public ADXLWriter {
     void writeToFile(const AccelData& data);
 };
 
-class RollupFileADXLWriter : public FileADXLWriter {
-  public:
-    RollupFileADXLWriter(const char *filename, bool verbose);
-    void write(const AccelData& data) override;
-  protected:
-    void rollup();
-    virtual bool timeToRollup() = 0;
-    virtual void resetRollup() = 0;
-    virtual void update() = 0;
-  private:
-    const char *basename;
-    void updateFilename();
-};
-
-class TimeRollupFileADXLWriter : public RollupFileADXLWriter {
-  public:
-    TimeRollupFileADXLWriter(const char *filename, bool verbose, double rollupPeriod);
-    void write(const AccelData& data) override;
-  protected:
-    bool timeToRollup();
-    void resetRollup();
-    void update()
-    { };
-  private:
-    double rollupPeriod;
-    unsigned long long checkpoint;
-};
-
-class CountRollupFileADXLWriter : public RollupFileADXLWriter {
+class CountRollupFileADXLWriter : public FileADXLWriter {
   public:
     CountRollupFileADXLWriter(const char *filename, bool verbose, int rollupCount);
-    void write(const AccelData& data) override;
-  protected:
-    bool timeToRollup() override;
-    void resetRollup() override;
-    void update() override;
+    ~CountRollupFileADXLWriter();
+    void write(const AccelData& data);
   private:
+    void rollup();
+    char *name_template;
     int rollupCount;
-    int checkpoint;
+    int count;
+};
+
+class TimeRollupFileADXLWriter : public FileADXLWriter {
+  public:
+    TimeRollupFileADXLWriter(const char *filename, bool verbose, double rollupPeriod);
+    ~TimeRollupFileADXLWriter();
+    void write(const AccelData& data);
+  private:
+    void rollup();
+    char *name_template;
+    double rollupPeriod;
+    unsigned long long checkpoint;
 };
 
 ADXLWriter *createWriter(const params& cfg);

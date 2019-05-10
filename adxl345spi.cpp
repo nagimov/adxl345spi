@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
     printf("\n");
     gpioTerminate();
     tDuration = time_time() - tStart;  // need to update current time to give a closer estimate of sampling rate
-    printf("%d samples read in %.2f seconds with sampling rate %.1f Hz\n",
+    printf("%d count read in %.2f seconds with sampling rate %.1f Hz\n",
            samples,
            tDuration,
            samples / tDuration);
