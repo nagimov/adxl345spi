@@ -26,7 +26,7 @@ ADXLWriter *createWriter(const Params& cfg)
   {
     assert(strlen(cfg.filename) != 0 && "filename not initialized");
     assert(strlen(cfg.backup) != 0 && "backup filename not initialized");
-    ADXLWriter **p = new ADXLWriter*[2];
+    ADXLWriter **p = new ADXLWriter *[2];
     p[0] = file_writer(cfg.filename, !cfg.save_binary, cfg.verbose);
     p[1] = file_writer(cfg.backup, cfg.text_backup, false);
     return new CompositeADXLWriter(p, 2);
@@ -161,19 +161,30 @@ FifoFileADXLWriter::FifoFileADXLWriter(const char *filename, bool verbose)
 {
   mkfifo(filename, 0666);
   this->fd = open(filename, O_WRONLY | O_APPEND | O_NONBLOCK);
-  std::cout << this->fd << std::endl;
   this->filename = filename;
   this->verbose = verbose;
 }
 
 FifoFileADXLWriter::~FifoFileADXLWriter()
 {
-  close(this->fd);
-  this->fd = 0;
+  if (fd > 0)
+  {
+    close(fd);
+    fd = 0;
+  }
 }
 
 void FifoFileADXLWriter::writeData(const AccelData& data)
 {
+  if (fd < 0)
+  {
+    fd = open(filename, O_WRONLY | O_APPEND | O_NONBLOCK);
+    if (fd < 0)
+    {
+      return;
+    }
+  }
+
   if (this->verbose == 1)
   {
     if (data.samples == -1)
@@ -188,6 +199,6 @@ void FifoFileADXLWriter::writeData(const AccelData& data)
     fflush(stdout);
   }
   char a[0];
-  int  n = sprintf(a, "%llu,%.5f,%.5f,%.5f\n", data.time, data.x, data.y, data.z);
+  int n = sprintf(a, "%llu,%.5f,%.5f,%.5f\n", data.time, data.x, data.y, data.z);
   write(fd, a, n);
 }
