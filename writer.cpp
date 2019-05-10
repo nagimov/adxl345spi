@@ -211,6 +211,6 @@ void FifoFileADXLWriter::writeData(const AccelData& data)
     std::cout << std::endl;
     std::cout << num << std::endl;
     close(fd);
-    fd = 0;
+    fd = -1;
   }
 }
