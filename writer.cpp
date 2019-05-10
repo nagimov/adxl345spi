@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string>
 #include <assert.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "writer.h"
 
@@ -8,7 +10,7 @@ ADXLWriter *file_writer(const char *filename, bool use_text, bool verbose)
 {
   if (use_text)
   {
-    return new FileADXLWriter(filename, verbose);
+    return new FifoFileADXLWriter(filename, verbose);
   }
   else
   {
@@ -151,4 +153,37 @@ void BinaryFileADXLWriter::write(const AccelData& data)
   Record r{data.time, data.x, data.y, data.z};
   fwrite((char *) &r, sizeof(Record), 1, this->f);
   fflush(this->f);
+}
+
+FifoFileADXLWriter::FifoFileADXLWriter(const char *filename, bool verbose)
+{
+  mkfifo(filename, 0666);
+  this->fd = fopen(filename, "a");
+  this->filename = filename;
+  this->verbose = verbose;
+}
+
+FifoFileADXLWriter::~FifoFileADXLWriter()
+{
+  fclose(this->fd);
+  this->fd = NULL;
+}
+
+void FifoFileADXLWriter::write(const AccelData& data)
+{
+  if (this->verbose == 1)
+  {
+    if (data.samples == -1)
+    {
+      printf("\r[%s] [-/-] %llu : x = %.3f, y = %.3f, z = %.3f", this->filename, data.time, data.x, data.y, data.z);
+    }
+    else
+    {
+      printf("\r[%s] [%i/%i] %llu : x = %.3f, y = %.3f, z = %.3f",
+             this->filename, data.i + 1, data.samples, data.time, data.x, data.y, data.z);
+    }
+    fflush(stdout);
+  }
+  fprintf(fd, "%llu,%.5f,%.5f,%.5f\n", data.time, data.x, data.y, data.z);
+  fflush(fd);
 }

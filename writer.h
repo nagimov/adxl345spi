@@ -57,6 +57,17 @@ class BinaryFileADXLWriter : public ADXLWriter {
     bool verbose;
 };
 
+class FifoFileADXLWriter : public ADXLWriter {
+  public:
+    FifoFileADXLWriter(const char *filename, bool verbose);
+    ~FifoFileADXLWriter();
+    void write(const AccelData& data);
+  protected:
+    FILE *fd;
+    const char *filename;
+    bool verbose;
+};
+
 ADXLWriter *createWriter(const Params& cfg);
 
 #endif //ADXL345SPI__WRITER_H_
