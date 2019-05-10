@@ -51,6 +51,7 @@ FileADXLWriter::FileADXLWriter(const char *filename, bool verbose)
 
 FileADXLWriter::~FileADXLWriter()
 {
+  printf("ping");
   fclose(this->f);
   this->f = NULL;
   printf("ping");
