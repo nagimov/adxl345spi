@@ -193,6 +193,7 @@ void FifoFileADXLWriter::writeData(const AccelData& data)
 
   if (fd < 0)
   {
+    std::cout << std::endl;
     std::cout << fd << " - ";
     fd = open(filename, O_WRONLY | O_APPEND | O_NONBLOCK);
     std::cout << fd << std::endl;
@@ -206,6 +207,7 @@ void FifoFileADXLWriter::writeData(const AccelData& data)
   int n = sprintf(a, "%llu,%.5f,%.5f,%.5f\n", data.time, data.x, data.y, data.z);
   ssize_t num = write(fd, a, n * sizeof(char));
   if (num < 0) {
+    std::cout << std::endl;
     std::cout << num << std::endl;
     std::cout << strerror(errno) << std::endl;
     close(fd);
