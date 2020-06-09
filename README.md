@@ -1,8 +1,6 @@
-# ADXL345 accelerometer reader (SPI interface)
+# ADXL345 accelerometer reader for Raspberry Pi
 
-This tiny utility provides an easy to use and reliable **non-realtime** access to
-ADXL345 three-axis digital accelerometer ([datasheet][adxl_manual]) through SPI interface at a maximal sampling rate of 3200 Hz.
-The output of the reader can be redirected to a standard console output or a text file.
+This simple command line tool provides an easy to use and reliable **non-realtime** access to ADXL345 three-axis digital accelerometer ([datasheet][adxl_manual]) over SPI interface of Raspberry Pi at sampling rates up to 3200 Hz. The output can be redirected to a standard output or CSV file.
 
 ## Usage
 
@@ -47,14 +45,13 @@ SDA : SPI_MOSI (pin 19)
 SCL : SPI_CLK (pin 23)
 ```
 
-Some of the ADXL345 breadboards have `VCC` pin marked as `3V3`. 
+Some ADXL345 breadboards have `VCC` pin marked as `3V3`.
 
 ## Build
 
 ### Dependencies
 
-This utility is built using `pigpio` library, which provides a `C` interface to the General Purpose Input Outputs
-(GPIO) of Raspberry Pi. More information on provided `C` interface can be found [here][pigpio_info_C].
+This utility is built using `pigpio` library, which provides a `C` interface to the General Purpose Input Outputs (GPIO) of Raspberry Pi. More information on provided `C` interface can be found [here][pigpio_info_C].
 
 In order to compile `adxl345spi.c` file, install `pigpio` library first. The procedure can be shortly described as follows:
 
@@ -76,16 +73,11 @@ More information can be found on the [download page][pigpio_download].
 
 ## Code features
 
-Due to limitations of I2C bus, it is impossible to obtain a maximal sampling rate through I2C interface. Therefore, SPI
-interface is used to get 3200 samples per second, which is the upper limit of ADXL345 chip itself. SPI bus data transfer
-rate is set to 2 Mbps, to ensure no readings are lost during transmission.
+Due to limitations of I2C bus, it is impossible to achieve high sampling rates using I2C interface. SPI interface is used to achieve sampling rates up to 3200 samples per second (upper limit of ADXL345 chip itself). SPI baud rate is set to 2 Mbps, to ensure that no readings are lost during transmission.
 
-For the console output, the downsampling is achieved using `sleep()` calls between transmissions, providing someway
-non-stable sampling rate. Hence, console output should be only used for a demo/test cases.
+For a standard output, downsampling is achieved by calling `sleep()` between transmissions, providing someway unstable sampling rate. If a reliable sampling rate is required, output to a file should be used.
 
-File output is performed through an accurate downsampling of the entire dataset read at a highest possible sampling
-rate (~30,000 Hz for 2 Mbps transfer rate). Such post-processing as FFT should be only done using a file output option,
-which provides a stable sampling rate and reliable time steps.
+For a file output, data is always read at a higher than required sampling rate (~30000 Hz for 2 Mbps SPI baud rate) and accurately downsampled to a specified value. Applications that require stable sampling rates and reliable time steps (e.g. spectrum analysis via FFT) should use a file output option.
 
 [adxl345spi_binary]: https://github.com/nagimov/adxl345spi/raw/master/adxl345spi
 [adxl_manual]: http://www.analog.com/en/products/mems/accelerometers/adxl345.html
@@ -93,4 +85,3 @@ which provides a stable sampling rate and reliable time steps.
 [pigpio_download]: https://abyz.me.uk/rpi/pigpio/download.html
 [adxl345spi_bb_png]: adxl345spi_bb.png
 [adxl345spi_schem_png]: adxl345spi_schem.png
-
