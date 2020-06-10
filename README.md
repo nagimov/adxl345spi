@@ -4,7 +4,7 @@ This simple command line tool provides an easy to use and reliable **non-realtim
 
 ## Usage
 
-**Executable binary: [adxl345spi][adxl345spi_binary]**
+Note: root privileges are required to run adxl345spi (i.e. `sudo adxl345spi [OPTIONS]`).
 
 ```
 Usage: adxl345spi [OPTION]...
@@ -32,7 +32,7 @@ Exit status:
 
 ## Wiring
 
-Fritzing diagrams for two popular revisions:
+Fritzing diagrams for two popular breadboards:
 
 ![adxl345spi_bb][adxl345spi_bb_png]
 
@@ -47,29 +47,20 @@ SCL : SPI_CLK (pin 23)
 
 Some ADXL345 breadboards have `VCC` pin marked as `3V3`.
 
-## Build
-
-### Dependencies
-
-This utility is built using `pigpio` library, which provides a `C` interface to the General Purpose Input Outputs (GPIO) of Raspberry Pi. More information on provided `C` interface can be found [here][pigpio_info_C].
-
-In order to compile `adxl345spi.c` file, install `pigpio` library first. The procedure can be shortly described as follows:
+## Installation
 
 ```
-wget https://abyz.me.uk/rpi/pigpio/pigpio.zip
-unzip pigpio.zip
-cd PIGPIO
-make -j4
+sudo apt-get update
+git clone https://github.com/nagimov/adxl345spi
+cd adxl345spi
+sudo make
 sudo make install
 ```
 
-More information can be found on the [download page][pigpio_download].
-
-### Compilation
-
-`gcc -Wall -pthread -o adxl345spi adxl345spi.c -lpigpio -lrt`
-
-**Build is only tested on Raspbian OS.**
+Notes:
+- root privileges are required by `make` in order to install dependencies (pigpio)
+- root privileges are required by `make install` in order to install compiled binary to `/usr/local/bin`
+- build is only tested on Raspbian / Raspbian Pi OS
 
 ## Code features
 
@@ -79,9 +70,6 @@ For a standard output, downsampling is achieved by calling `sleep()` between tra
 
 For a file output, data is always read at a higher than required sampling rate (~30000 Hz for 2 Mbps SPI baud rate) and accurately downsampled to a specified value. Applications that require stable sampling rates and reliable time steps (e.g. spectrum analysis via FFT) should use a file output option.
 
-[adxl345spi_binary]: https://github.com/nagimov/adxl345spi/raw/master/adxl345spi
 [adxl_manual]: http://www.analog.com/en/products/mems/accelerometers/adxl345.html
-[pigpio_info_C]: https://abyz.me.uk/rpi/pigpio/cif.html
-[pigpio_download]: https://abyz.me.uk/rpi/pigpio/download.html
 [adxl345spi_bb_png]: adxl345spi_bb.png
 [adxl345spi_schem_png]: adxl345spi_schem.png
