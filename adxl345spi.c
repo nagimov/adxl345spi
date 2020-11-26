@@ -13,7 +13,7 @@
 #define POWER_CTL     0x2D
 #define DATAX0        0x32
 
-const char codeVersion[3] = "0.2";  // code version number
+const char codeVersion[3] = "0.3";  // code version number
 const int timeDefault = 5;  // default duration of data stream, seconds
 const int freqDefault = 5;  // default sampling rate of data stream, Hz
 const int freqMax = 3200;  // maximal allowed cmdline arg sampling rate of data stream, Hz
