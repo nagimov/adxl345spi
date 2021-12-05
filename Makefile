@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -pthread -lpigpio -lrt
+CFLAGS = -Wall -pthread
+LIBS = -L /usr/local/include -lpigpio -lrt
 INSTALL = `which install`
 
 all: packages adxl345spi
@@ -14,4 +15,4 @@ packages:
 	if ! dpkg-query -W -f='$${Status}' pigpio | grep "ok installed"; then apt-get -y install pigpio; fi
 
 adxl345spi: adxl345spi.c
-	$(CC) $(CFLAGS) adxl345spi.c -o adxl345spi
+	$(CC) $(CFLAGS) adxl345spi.c $(LIBS) -o adxl345spi
